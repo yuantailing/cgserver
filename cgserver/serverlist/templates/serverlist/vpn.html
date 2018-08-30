@@ -1,0 +1,14 @@
+{% load static %}<!DOCTYPE html>
+<html lang="cn">
+	<head>
+		<meta charset="utf-8" />
+		<title>CSCG vpn</title>
+	</head>
+	<body>
+		<h1>Welcome To CSCG vpn</h1>
+		<p>Configuration file can be downloaded <a href="{% static 'serverlist/cscg.ovpn' %}">here</a>.</p>
+		<p>OpenVPN software can be downloaded <a href="https://openvpn.net/index.php/open-source/downloads.html">here</a>.</p>
+		<p>Use your CSCG Username/Password as identification credential.</p>
+		<p>For linux, <code>$ sudo openvpn cscg.ovpn</code></p>
+	</body>
+</html>

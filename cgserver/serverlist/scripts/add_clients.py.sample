@@ -1,0 +1,19 @@
+from serverlist.models import Client
+from django.db import transaction
+
+import os
+
+CONFIG = [
+    ('68.30', 'secret', '', '', '')
+]
+
+@transaction.atomic
+def run(*args):
+    for client_id, client_secret, display_name, manager, info in CONFIG:
+        client = Client.objects.filter(client_id=client_id).first()
+        if client is None:
+            client = Client(client_id=client_id, client_secret=client_secret, display_name=display_name, manager=manager, info=info)
+            client.save()
+            print('Client<{:s}> added'.format(client_id))
+        else:
+            print('Client<{:s}> skipped'.format(client_id))

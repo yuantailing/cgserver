@@ -1,0 +1,50 @@
+{% load islist %}<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>Server list</title>
+	</head>
+	<body>
+		<h1>Server list</h1>
+		<p>Go to <a href="{% url 'serverlist:vpn' %}">[vpn]</a>.</p>
+		<table border="1">
+			<thead>
+				<tr>
+					<th>Client</th>
+					<th>Platform</th>
+					<th>IP</th>
+					<th>CPU</th>
+					<th>loadavg</th>
+					<th>内存</th>
+					<th>磁盘</th>
+					<th>显卡</th>
+					<th>显存</th>
+					<th>在线用户</th>
+					<th>uptime</th>
+					<th>数据更新</th>
+					<th>管理员</th>
+					<th>消息</th>
+					<th>详细</th>
+				</tr>
+			</thead>
+			<tbody>
+				{% for tr in table %}
+				<tr>
+					{% for td in tr %}
+					<td>
+						{% if td|islist %}
+							{% for line in td %}
+								{{ line }}<br>
+							{% endfor %}
+						{% else %}
+							{{ td }}
+						{% endif %}
+					</td>
+					{% endfor %}
+					<td><a href="#">详细</a></td>
+				</tr>
+				{% endfor %}
+			<tbody>
+		</table>
+	</body>
+</html>
