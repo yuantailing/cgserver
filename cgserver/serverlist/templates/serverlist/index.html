@@ -30,7 +30,7 @@
 			<tbody>
 				{% for tr in table %}
 				<tr>
-					{% for td in tr %}
+					{% for td in tr.tr %}
 					<td>
 						{% if td|islist %}
 							{% for line in td %}
@@ -41,10 +41,12 @@
 						{% endif %}
 					</td>
 					{% endfor %}
-					<td><a href="#">详细</a></td>
+					<td><a href="{% url 'serverlist:client' tr.client.pk %}">详细</a></td>
 				</tr>
 				{% endfor %}
 			<tbody>
 		</table>
+		<p>使用服务器联系管理员，信息错误联系袁泰凌。</p>
+		<div style="height: 60px;"></div>
 	</body>
 </html>

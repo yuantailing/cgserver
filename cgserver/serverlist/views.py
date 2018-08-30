@@ -1,16 +1,17 @@
 import base64
 import functools
-import time
 import json
-import os
 import math
+import os
+import pprint
+import time
 
 from .models import Client, ClientReport, UnknownReport
 from django.contrib.auth import authenticate, login
 from django.core.exceptions import SuspiciousOperation
 from django.db import models
 from django.http import FileResponse, Http404, HttpResponse, JsonResponse, HttpResponseBadRequest
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
 from cgserver import settings
 
@@ -35,7 +36,7 @@ def basic_auth_required(func):
 @basic_auth_required
 def index(request):
     client_reports = ClientReport.objects.values('client_id').annotate(id=models.Max('id'))
-    clients_no_report = Client.objects.exclude(id__in=[c['client_id'] for c in client_reports]).all()
+    clients_no_report = Client.objects.exclude(id__in=[c['client_id'] for c in client_reports]).order_by('client_id')
     client_reports = ClientReport.objects.filter(id__in=[c['id'] for c in client_reports]).select_related('client').order_by('client__client_id')
     now = time.time()
     table = []
@@ -50,7 +51,7 @@ def index(request):
         tr.append(report['platform'])
         tr.append(client_report.ip)
         if status == 'ok':
-            tr.append('{:d} ({:.0f}%)'.format(report['cpu_count'], report['cpu_percent'], 0))
+            tr.append('{:d}核 (使用率 {:.0f}%)'.format(report['cpu_count'], report['cpu_percent'], 0))
             tr.append('N/A' if report['loadavg'] is None else '{:.1f}'.format(report['loadavg'][0]))
             tr.append('{:.1f}G ({:.0f}%)'.format(report['virtual_memory'][0] / 1024 ** 3, report['virtual_memory'][2], 0))
             tr.append(['{:.0f}G ({:.0f}%)'.format(disk[0] / 1024**3, disk[3]) for disk in report['disk_usage']])
@@ -74,7 +75,7 @@ def index(request):
             tr.append(status)
         tr.append(client.manager)
         tr.append(client.info)
-        table.append(tr)
+        table.append({'client': client, 'tr': tr})
     for client in clients_no_report:
         tr = []
         tr.append(client.client_id)
@@ -84,17 +85,22 @@ def index(request):
         tr += ['未配置']
         tr.append(client.manager)
         tr.append(client.info)
-        table.append(tr)
+        table.append({'client': client, 'tr': tr})
     return render(request, 'serverlist/index.html', {'table': table})
 
-def script(request):
-    response = FileResponse(open(os.path.join(settings.BASE_DIR, 'serverlist', 'client-side.sh'), 'rb'))
-    response['Content-Type'] = 'application/x-sh'
-    response['Content-Disposition'] = 'attachment;filename="script.sh"'
-    return response
+def client(request, pk):
+    client = get_object_or_404(Client.objects, pk=pk)
+    client_reports = ClientReport.objects.filter(client=client).order_by('-created_at')
+    return render(request, 'serverlist/client.html', {'client': client, 'client_reports': client_reports})
+
+def clientreport(request, pk):
+    client_report = get_object_or_404(ClientReport.objects.select_related('client'), pk=pk)
+    # report_str = json.dumps(json.loads(client_report.report), sort_keys=True, indent=2)
+    report_str = pprint.pformat(json.loads(client_report.report), width=160)
+    return render(request, 'serverlist/clientreport.html', {'client_report': client_report, 'report_str': report_str})
 
 @csrf_exempt
-def clientreport(request):
+def recvreport(request):
     client_id = request.POST.get('client_id')
     client_secret = request.POST.get('client_secret')
     report = request.POST.get('report')
@@ -115,7 +121,7 @@ def clientreport(request):
         unknown_report.save()
         raise Http404
     else:
-        client_report = ClientReport(client=client, ip=ip, version=version, report=json.dumps(report))
+        client_report = ClientReport(client=client, ip=ip, version=version, report=json.dumps(report, sort_keys=True))
         client_report.save()
     return JsonResponse({'error': 0, 'msg': 'ok'}, json_dumps_params={'sort_keys': True})
 
