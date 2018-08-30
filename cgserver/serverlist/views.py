@@ -58,7 +58,7 @@ def index(request):
                 tr.append([dev['nvmlDeviceGetName'] for dev in report['nvmlDevices']])
                 tr.append(['{:.1f}G ({:.0f}%)'.format(
                     dev['nvmlDeviceGetMemoryInfo']['total'] / 1024**3,
-                    dev['nvmlDeviceGetMemoryInfo']['used'] / dev['nvmlDeviceGetMemoryInfo']['total']) for dev in report['nvmlDevices']])
+                    dev['nvmlDeviceGetMemoryInfo']['used'] / dev['nvmlDeviceGetMemoryInfo']['total'] * 100) for dev in report['nvmlDevices']])
             else:
                 tr.append('NVML failed')
                 tr.append('N/A')
