@@ -51,15 +51,24 @@ def index(request):
         tr.append(report['platform'])
         tr.append(client_report.ip)
         if status == 'ok':
-            tr.append('{:d}核 (使用率 {:.0f}%)'.format(report['cpu_count'], report['cpu_percent'], 0))
+            tr.append([
+                    '{:d} 核 (使用率 {:.0f}%)'.format(report['cpu_count'], report['cpu_percent'], 0),
+                    '最高主频 {:.1f}GHz'.format(report['cpu_freq'][2] / 1000),
+                ])
             tr.append('N/A' if report['loadavg'] is None else '{:.1f}'.format(report['loadavg'][0]))
             tr.append('{:.1f}G ({:.0f}%)'.format(report['virtual_memory'][0] / 1024 ** 3, report['virtual_memory'][2], 0))
             tr.append(['{:.0f}G ({:.0f}%)'.format(disk[0] / 1024**3, disk[3]) for disk in report['disk_usage']])
             if report['nvml_version']:
                 tr.append([dev['nvmlDeviceGetName'] for dev in report['nvmlDevices']])
                 tr.append(['{:.1f}G ({:.0f}%)'.format(
-                    dev['nvmlDeviceGetMemoryInfo']['total'] / 1024**3,
-                    dev['nvmlDeviceGetMemoryInfo']['used'] / dev['nvmlDeviceGetMemoryInfo']['total'] * 100) for dev in report['nvmlDevices']])
+                        dev['nvmlDeviceGetMemoryInfo']['total'] / 1024**3,
+                        dev['nvmlDeviceGetMemoryInfo']['used'] / dev['nvmlDeviceGetMemoryInfo']['total'] * 100,
+                    ) for dev in report['nvmlDevices']])
+                tr.append(['{:d}% ({:.0f}W/{:.0f}W)'.format(
+                        dev['nvmlDeviceGetUtilizationRates']['gpu'],
+                        dev['nvmlDeviceGetPowerUsage'] / 1000,
+                        dev['nvmlDeviceGetPowerManagementLimit'] / 1000,
+                    ) for dev in report['nvmlDevices']])
             else:
                 tr.append('NVML failed')
                 tr.append('N/A')
@@ -71,7 +80,7 @@ def index(request):
             tr.append('{:.0f} 天'.format((now - report['boot_time']) / 86400, 0))
             tr.append('{:d} 分钟前'.format(math.ceil((now - client_report.created_at.timestamp()) / 60)))
         else:
-            tr += [''] * 8
+            tr += [''] * 9
             tr.append(status)
         tr.append(client.manager)
         tr.append(client.info)
@@ -81,7 +90,7 @@ def index(request):
         tr.append(client.client_id)
         tr.append('N/A')
         tr.append('N/A')
-        tr += [''] * 8
+        tr += [''] * 9
         tr += ['未配置']
         tr.append(client.manager)
         tr.append(client.info)
@@ -93,8 +102,8 @@ def client(request, pk):
     client_reports = ClientReport.objects.filter(client=client).order_by('-created_at')
     return render(request, 'serverlist/client.html', {'client': client, 'client_reports': client_reports})
 
-def clientreport(request, pk):
-    client_report = get_object_or_404(ClientReport.objects.select_related('client'), pk=pk)
+def clientreport(request, client_id, report_id):
+    client_report = get_object_or_404(ClientReport.objects.select_related('client'), id=report_id, client_id=client_id)
     # report_str = json.dumps(json.loads(client_report.report), sort_keys=True, indent=2)
     report_str = pprint.pformat(json.loads(client_report.report), width=160)
     return render(request, 'serverlist/clientreport.html', {'client_report': client_report, 'report_str': report_str})

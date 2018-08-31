@@ -10,26 +10,35 @@
 		<p>OpenVPN software can be downloaded <a href="https://openvpn.net/index.php/open-source/downloads.html">here</a>.</p>
 		<p>Mirror download (Installer, Windows 7 and later): <a href="http://cg.cs.tsinghua.edu.cn/vpn/static/openvpn-install-2.4.6-I602.exe">openvpn-install-2.4.6-I602.exe</a></p>
 		<h3>FAQ</h3>
-
 		<p>
-			Q: net.tsinghua.edu.cn 仍看到自己的帐号<br>
-			A: 校内流量不走 VPN，看到自己的帐号属于正常现象。检查流量是否走 VPN 的方法是打开 <a href="http://ip.cn">ip.cn</a> 或在百度上搜 <a href="https://www.baidu.com/s?wd=IP">IP</a>，Linux 检查方式 <code>$ curl ip.cn</code>。与此前 PPTP VPN 不同的是，你也可以放心地点“断开连接”，不会导致服务器掉线。
+			Q: Windows 如何配置 OpenVPN<br>
+			A: 两种方案，推荐后一种，2.4 以上版本运行无需管理员权限<br>
+			A1: 运行 OpenVPN GUI，右下角托盘栏，Import file 导入配置文件，然后 Connect。如果是 2.3 以下版本，必须以管理员身份运行，否则无权限修改路由表，OpenVPN 即使连上也无法生效<br>
+			A2: 配置文件复制到 <i>C:\Program Files\OpenVPN\config</i>（如果 OpenVPN 版本是 2.4 以上，还可以把配置文件放在 <i>C:\Users\用户名\OpenVPN</i>），然后 Connect
+			&nbsp;&nbsp;2.4 以上版本运行无需管理员权限，详见后文
 		</p>
 		<p>
-			Q: Linux 上作为服务运行，免得单独开一个 terminal<br>
-			A: 1) 安装 openvpn，2) 配置文件下载到 <i>/etc/openvpn/cscg.conf</i>（注意后缀），3) 运行 <code>$ sudo systemctl restart openvpn@cscg</code>
+			Q: Linux 如何配置 OpenVPN<br>
+			A: 两种方案，推荐后一种，以服务模式运行，避免多开一个 terminal，其它用户也可重启该服务<br>
+			A1: 1) 安装 openvpn，2) 下载配置文件 cscg.ovpn，3) 运行 <code>$ sudo openvpn cscg.ovpn</code><br>
+			A2: 1) 安装 openvpn，2) 配置文件下载到 <i>/etc/openvpn/cscg.conf</i>（注意后缀），3) 运行 <code>$ sudo systemctl restart openvpn@cscg</code>（或 <code>$ sudo service openvpn@cscg restart</code>）
+		</p>
+		<p>
+			Q: net.tsinghua.edu.cn 仍看到自己的帐号<br>
+			A: 校内流量不走 VPN，看到自己的帐号属于正常现象。检查流量是否走 VPN 的方法是打开 <a href="http://ip.cn">ip.cn</a> 或在百度上搜 <a href="https://www.baidu.com/s?wd=IP">IP</a>，Linux 检查方式 <code>$ curl ip.cn</code>。与此前 PPTP VPN 不同的是，你还可以放心地点“断开连接”，不会导致服务器掉线。
 		</p>
 		<p>
 			Q: 免输密码<br>
-			A: 配置文件中 <code>auth-user-pass</code> 改为 <code>auth-user-pass account.txt</code>，新建 account.txt（与 cscg.ovpn 同目录），第一行为用户名，第二行为密码
+			A: 配置文件中 <code>auth-user-pass</code> 这行改为 <code>auth-user-pass account.txt</code>，新建 account.txt（与 cscg.ovpn 同目录），第一行填用户名，第二行填密码
 		</p>
 		<p>
 			Q: 在校外，使用 VPN 访问校内资源（如 info 等）<br>
 			A: 配置文件中 <code>route 166.111.0.0 255.255.0.0 net_gateway</code> 中的 net_gateway 改为 vpn_gateway 即可。59.66 网段同理
 		</p>
 		<p>
-			Q: Windows 修改不了 <i>C:\Program Files\OpenVPN\config</i> 中的 cscg.ovpn 文件，需要管理员权限<br>
-			A: 如果 OpenVPN 版本是 2.4 以上，可以把配置文件放在 <i>C:\Users\用户名\OpenVPN</i>，即可有权限修改
+			Q: OpenVPN 与 PPTP 相比，有什么优缺点<br>
+			A: 缺点：系统不自带，需要安装软件。优点：容易配置路由表，校内、校外流量分开走；可以穿透 NAT，在更复杂的网络环境下可以连接；子网内部可以 P2P 连接
 		</p>
+		<div style="height: 60px;"></div>
 	</body>
 </html>

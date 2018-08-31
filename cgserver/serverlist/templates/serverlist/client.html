@@ -5,7 +5,7 @@
 	</head>
 	<body>
 		<h1>Client</h1>
-		<p><a href="{% url 'serverlist:index' %}">&lt;&lt; back</a></p>
+		<p><a href="{% url 'serverlist:index' %}">&lt;&lt; back to home</a></p>
 		<table border="1">
 			<tbody>
 				<tr>
@@ -42,7 +42,7 @@
 					<td>{{ tr.created_at }}</td>
 					<td>{{ tr.ip }}</td>
 					<td>{{ tr.version }}</td>
-					<td><a href="{% url 'serverlist:clientreport' tr.pk %}">详细</a></td>
+					<td><a href="{% url 'serverlist:clientreport' client.pk tr.pk %}">详细</a></td>
 				</tr>
 				{% endfor %}
 			</tbody>

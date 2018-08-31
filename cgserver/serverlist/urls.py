@@ -6,8 +6,8 @@ app_name = 'serverlist'
 
 urlpatterns = [
     path('', views.index, name='index'),
-    re_path('client/(?P<pk>[0-9]+)', views.client, name='client'),
-    re_path('client/report/(?P<pk>[0-9]+)', views.clientreport, name='clientreport'),
+    re_path('^client/(?P<pk>[0-9]+)$', views.client, name='client'),
+    re_path('^client/(?P<client_id>[0-9]+)/report/(?P<report_id>[0-9]+)$', views.clientreport, name='clientreport'),
     path('clientreport', views.recvreport),
     path('vpn', views.vpn, name='vpn'),
 ]
