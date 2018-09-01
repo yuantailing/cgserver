@@ -4,36 +4,40 @@ import json
 import math
 import os
 import pprint
+import requests
 import time
 
-from .models import Client, ClientReport, UnknownReport
-from django.contrib.auth import authenticate, login
-from django.core.exceptions import SuspiciousOperation
-from django.db import models
-from django.http import FileResponse, Http404, HttpResponse, JsonResponse, HttpResponseBadRequest
-from django.shortcuts import render, get_object_or_404
-from django.views.decorators.csrf import csrf_exempt
+from .models import Client, ClientReport, Employee, UnknownReport
 from cgserver import settings
+from django.contrib import auth
+from django.contrib.auth import authenticate
+from django.contrib.auth.models import User
+from django.db import models
+from django.http import Http404, HttpResponseBadRequest, HttpResponse, JsonResponse
+from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
+from django.views.decorators.csrf import csrf_exempt
+from pprint import pprint
+from six.moves import urllib
 
 # Create your views here.
 
-def basic_auth_required(func):
+def check_access(func):
     @functools.wraps(func)
     def _decorator(request, *args, **kwargs):
-        if 'HTTP_AUTHORIZATION' in request.META:
-            authmeth, auth = request.META['HTTP_AUTHORIZATION'].split(' ', 1)
-            if authmeth.lower() == 'basic':
-                auth = base64.b64decode(auth.strip()).decode('latin1')
-                username, password = auth.split(':', 1)
-                if username == settings.HTTP_AUTHORIZATION_USERNAME and password == settings.HTTP_AUTHORIZATION_PASSWORD:
-                    return func(request, *args, **kwargs)
-        res = HttpResponse()
-        res.status_code = 401
-        res['WWW-Authenticate'] = 'Basic'
-        return res
+        if request.user.is_anonymous:
+            return redirect('https://github.com/login/oauth/authorize?client_id={:s}&scope=user:email'.format(settings.GITHUB_CLIENT_ID))
+        if not hasattr(request.user, 'employee'):
+            Employee.objects.create(user=request.user)
+        if not request.user.employee.can_access:
+            return redirect(reverse('serverlist:permissiondenied'))
+        return func(request, *args, **kwargs)
     return _decorator
 
-@basic_auth_required
+def permissiondenied(request):
+    return render(request, 'serverlist/permissiondenied.html')
+
+@check_access
 def index(request):
     client_reports = ClientReport.objects.values('client_id').annotate(id=models.Max('id'))
     clients_no_report = Client.objects.exclude(id__in=[c['client_id'] for c in client_reports]).order_by('client_id')
@@ -97,16 +101,15 @@ def index(request):
         table.append({'client': client, 'tr': tr})
     return render(request, 'serverlist/index.html', {'table': table})
 
-@basic_auth_required
+@check_access
 def client(request, pk):
     client = get_object_or_404(Client.objects, pk=pk)
     client_reports = ClientReport.objects.filter(client=client).order_by('-created_at')
     return render(request, 'serverlist/client.html', {'client': client, 'client_reports': client_reports})
 
-@basic_auth_required
+@check_access
 def clientreport(request, client_id, report_id):
     client_report = get_object_or_404(ClientReport.objects.select_related('client'), id=report_id, client_id=client_id)
-    # report_str = json.dumps(json.loads(client_report.report), sort_keys=True, indent=2)
     report_str = pprint.pformat(json.loads(client_report.report), width=160)
     return render(request, 'serverlist/clientreport.html', {'client_report': client_report, 'report_str': report_str})
 
@@ -136,5 +139,47 @@ def recvreport(request):
         client_report.save()
     return JsonResponse({'error': 0, 'msg': 'ok'}, json_dumps_params={'sort_keys': True})
 
+@check_access
 def vpn(request):
     return render(request, 'serverlist/vpn.html')
+
+def githubcallback(request):
+    code = request.GET.get('code')
+    if not code:
+        return HttpResponseBadRequest('no verification code')
+    res = requests.post(
+        'https://github.com/login/oauth/access_token',
+        data=urllib.parse.urlencode({
+            'client_id': settings.GITHUB_CLIENT_ID,
+            'client_secret': settings.GITHUB_CLIENT_SECRET,
+            'code': code,
+        }).encode(),
+        headers={'Accept': 'application/json'},
+    )
+    res = res.json()
+    if not res.get('access_token'):
+        print(res)
+        return HttpResponseBadRequest('bad verification code')
+    if not res.get('scope') or 'user:email' not in res['scope'].split(','):
+        return HttpResponseBadRequest('bad verification scope')
+    access_token = res['access_token']
+    user = requests.get(
+        'https://api.github.com/user',
+        headers={'Authorization': 'token {:s}'.format(access_token)}
+    )
+    user = user.json()
+    username = 'github/{:s}'.format(user['login'])
+    email = user['email']
+    user = User.objects.filter(username=username).first()
+    if user is None:
+        user = User.objects.create_user(username=username, email=email)
+    else:
+        if user.email != email:
+            user.email = email
+            user.save()
+    auth.login(request, user)
+    return redirect(reverse('serverlist:index'))
+
+def logout(request):
+    auth.logout(request)
+    return redirect(reverse('serverlist:permissiondenied'))

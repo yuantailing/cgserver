@@ -21,7 +21,7 @@
 			Q: Linux 如何配置 OpenVPN<br>
 			A: 两种方案，推荐后一种，以服务模式运行，避免多开一个 terminal，其它用户也可重启该服务<br>
 			A1: 1) 安装 openvpn，2) 下载配置文件 cscg.ovpn，3) 运行 <code>$ sudo openvpn cscg.ovpn</code><br>
-			A2: 1) 安装 openvpn，2) 配置文件下载到 <i>/etc/openvpn/cscg.conf</i>（注意后缀），3) 运行 <code>$ sudo systemctl restart openvpn@cscg</code>（或 <code>$ sudo service openvpn@cscg restart</code>）。对于旧版本的 openvpn 不要加 <code>@cscg</code>）
+			A2: 1) 安装 openvpn，2) 配置文件下载到 <i>/etc/openvpn/cscg.conf</i>（注意后缀），3) 运行 <code>$ sudo systemctl restart openvpn@cscg</code>（或 <code>$ sudo service openvpn@cscg restart</code>）。旧版本 openvpn 不要加 <code>@cscg</code>
 		</p>
 		<p>
 			Q: net.tsinghua.edu.cn 仍看到自己的帐号<br>

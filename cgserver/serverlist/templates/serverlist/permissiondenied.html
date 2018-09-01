@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>Permission denied</title>
+	</head>
+	<body>
+		<h1>Permission denied</h1>
+		<p><a href="{% url 'serverlist:index' %}">&lt;&lt; back to home</a></p>
+		<p>username: <span>{{ user.username }}</span></p>
+		<p>email: <span>{{ user.email }}</span></p>
+		{% if user.is_anonymous %}
+		<p>Please click "back to home" and login your account.</p>
+		{% else %}
+		<p>Please notify administrator to activate your account.</p>
+		{% endif %}
+	</body>
+</html>
