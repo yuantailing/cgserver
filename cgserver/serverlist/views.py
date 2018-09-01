@@ -57,7 +57,7 @@ def index(request):
                 ])
             tr.append('N/A' if report['loadavg'] is None else '{:.1f}'.format(report['loadavg'][0]))
             tr.append('{:.1f}G ({:.0f}%)'.format(report['virtual_memory'][0] / 1024 ** 3, report['virtual_memory'][2], 0))
-            tr.append(['{:.0f}G ({:.0f}%)'.format(disk[0] / 1024**3, disk[3]) for disk in report['disk_usage']])
+            tr.append(['{:.0f}G ({:.0f}%)'.format(disk[0] / 1024**3, disk[3]) for disk in report['disk_usage'] if disk[0] / 1024**3 > 9])
             if report['nvml_version']:
                 tr.append([dev['nvmlDeviceGetName'] for dev in report['nvmlDevices']])
                 tr.append(['{:.1f}G ({:.0f}%)'.format(
@@ -97,11 +97,13 @@ def index(request):
         table.append({'client': client, 'tr': tr})
     return render(request, 'serverlist/index.html', {'table': table})
 
+@basic_auth_required
 def client(request, pk):
     client = get_object_or_404(Client.objects, pk=pk)
     client_reports = ClientReport.objects.filter(client=client).order_by('-created_at')
     return render(request, 'serverlist/client.html', {'client': client, 'client_reports': client_reports})
 
+@basic_auth_required
 def clientreport(request, client_id, report_id):
     client_report = get_object_or_404(ClientReport.objects.select_related('client'), id=report_id, client_id=client_id)
     # report_str = json.dumps(json.loads(client_report.report), sort_keys=True, indent=2)
