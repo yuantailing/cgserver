@@ -124,5 +124,5 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'serverlist', 'static'),
 ]
 
-HTTP_AUTHORIZATION_USERNAME = 'username'
-HTTP_AUTHORIZATION_PASSWORD = 'password'
+GITHUB_CLIENT_ID = ''
+GITHUB_CLIENT_SECRET = ''

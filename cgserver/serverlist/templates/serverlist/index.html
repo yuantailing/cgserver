@@ -1,59 +1,58 @@
-{% load islist %}<!DOCTYPE html>
-<html lang="en">
-	<head>
-		<meta charset="utf-8">
-		<title>Server list</title>
+{% extends "./base.html" %}
+{% load islist %}
+{% block title %}Server list{% endblock %}
+
+{% block head %}
 		<style>
 table td {
 	word-break: keep-all;
 	white-space: nowrap;
 }
 		</style>
-	</head>
-	<body>
-		<h1>Server list</h1>
-		<p>Go to <a href="{% url 'serverlist:vpn' %}">[vpn]</a>.</p>
-		<table border="1">
-			<thead>
-				<tr>
-					<th>Client</th>
-					<th>Platform</th>
-					<th>IP</th>
-					<th>CPU</th>
-					<th>loadavg</th>
-					<th>内存</th>
-					<th>磁盘</th>
-					<th>显卡</th>
-					<th>显存</th>
-					<th>GPU-Util</th>
-					<th>在线用户</th>
-					<th>uptime</th>
-					<th>数据更新</th>
-					<th>管理员</th>
-					<th>更多信息</th>
-					<th>详细</th>
-				</tr>
-			</thead>
-			<tbody>
-				{% for tr in table %}
-				<tr>
-					{% for td in tr.tr %}
-					<td>
-						{% if td|islist %}
-							{% for line in td %}
-								{{ line }}<br>
-							{% endfor %}
-						{% else %}
-							{{ td }}
-						{% endif %}
-					</td>
+{% endblock %}
+
+{% block content %}
+<h1>Server list</h1>
+<p>Go to <a href="{% url 'serverlist:vpn' %}">[vpn]</a>.</p>
+<table border="1">
+	<thead>
+		<tr>
+			<th>Client</th>
+			<th>Platform</th>
+			<th>IP</th>
+			<th>CPU</th>
+			<th>loadavg</th>
+			<th>内存</th>
+			<th>磁盘</th>
+			<th>显卡</th>
+			<th>显存</th>
+			<th>GPU-Util</th>
+			<th>在线用户</th>
+			<th>uptime</th>
+			<th>数据更新</th>
+			<th>管理员</th>
+			<th>更多信息</th>
+			<th>详细</th>
+		</tr>
+	</thead>
+	<tbody>
+		{% for tr in table %}
+		<tr>
+			{% for td in tr.tr %}
+			<td>
+				{% if td|islist %}
+					{% for line in td %}
+						{{ line }}<br>
 					{% endfor %}
-					<td><a href="{% url 'serverlist:client' tr.client.pk %}">详细</a></td>
-				</tr>
-				{% endfor %}
-			<tbody>
-		</table>
-		<p>使用服务器联系管理员，信息错误联系袁泰凌。</p>
-		<div style="height: 60px;"></div>
-	</body>
-</html>
+				{% else %}
+					{{ td }}
+				{% endif %}
+			</td>
+			{% endfor %}
+			<td><a href="{% url 'serverlist:client' tr.client.pk %}">详细</a></td>
+		</tr>
+		{% endfor %}
+	<tbody>
+</table>
+<p>使用服务器联系管理员，信息错误联系袁泰凌。</p>
+{% endblock %}

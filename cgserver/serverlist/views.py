@@ -7,17 +7,18 @@ import pprint
 import requests
 import time
 
+from .forms import ResetPasswordForm
 from .models import Client, ClientReport, Employee, UnknownReport
 from cgserver import settings
 from django.contrib import auth
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.http import Http404, HttpResponseBadRequest, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
-from pprint import pprint
 from six.moves import urllib
 
 # Create your views here.
@@ -179,6 +180,31 @@ def githubcallback(request):
             user.save()
     auth.login(request, user)
     return redirect(reverse('serverlist:index'))
+
+@check_access
+def resetpassword(request):
+    if request.method == 'POST':
+        form = ResetPasswordForm(request.POST)
+        if form.is_valid():
+            password = form.cleaned_data['password']
+            validators = [
+                auth.password_validation.MinimumLengthValidator(),
+                auth.password_validation.UserAttributeSimilarityValidator(),
+                auth.password_validation.CommonPasswordValidator(),
+                auth.password_validation.NumericPasswordValidator(),
+            ]
+            try:
+                auth.password_validation.validate_password(password, request.user, password_validators=validators)
+            except ValidationError as e:
+                return render(request, 'serverlist/resetpassword.html', {'form': form, 'validation': e})
+            request.user.set_password(password)
+            request.user.save()
+            auth.login(request, request.user)
+            return render(request, 'serverlist/resetpassword_finish.html')
+        return HttpResponseBadRequest('bad form')
+    else:
+        form = ResetPasswordForm()
+        return render(request, 'serverlist/resetpassword.html', {'form': form, 'validation': []})
 
 def logout(request):
     auth.logout(request)

@@ -12,5 +12,6 @@ urlpatterns = [
     path('clientreport', views.recvreport),
     path('vpn', views.vpn, name='vpn'),
     path('githubcallback', views.githubcallback, name='githubcallback'),
+    path('resetpassword', views.resetpassword, name='resetpassword'),
     path('logout', views.logout, name='logout'),
 ]

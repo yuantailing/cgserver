@@ -1,52 +1,47 @@
-<!DOCTYPE html>
-<html lang="en">
-	<head>
-		<title>Client report</title>
-	</head>
-	<body>
-		<h1>Client report</h1>
-		<p><a href="{% url 'serverlist:client' client_report.client_id %}">&lt; back</a></p>
-		<p><a href="{% url 'serverlist:index' %}">&lt;&lt; back to home</a></p>
-		<table border="1">
-			<tbody>
-				<tr>
-					<th>client_id</th>
-					<td>{{ client_report.client.client_id }}</td>
-				</tr>
-				<tr>
-					<th>IP</th>
-					<td>{{ client_report.ip }}</td>
-				</tr>
-				<tr>
-					<th>version</th>
-					<td>{{ client_report.version }}</td>
-				</tr>
-				<tr>
-					<th>date</th>
-					<td>{{ client_report.created_at }}</td>
-				</tr>
-				<tr>
-					<th>report</th>
-					<td><pre>{{ report_str }}</pre></td>
-				</tr>
-			<tbody>
-		</table>
-		<h4>格式说明</h4>
-		<ul>
-			<li>cpu_freq: <code>scpufreq(current, min, max)</code></li>
-			<li>cpu_stats: <code>scpustats(ctx_switches, interrupts, soft_interrupts, syscalls)</code></li>
-			<li>cpu_times: <code>scputimes(user, nice, system, idle, iowait, irq, softirq, steal, guest, guest_nice)</code></li>
-			<li>cpu_times_percent: <code>scputimes(user, nice, system, idle, iowait, irq, softirq, steal, guest, guest_nice)</code></li>
-			<li>disk_io_counters: <code>sdiskio(read_count, write_count, read_bytes, write_bytes, read_time, write_time, read_merged_count, write_merged_count, busy_time)</code></li>
-			<li>disk_usage: <code>[sdiskpart(device, mountpoint, fstype, opts)]</code></li>
-			<li>cpu_freq: <code>sdiskusage(total, used, free, percent)</code></li>
-			<li>net_if_addrs: <code>{[snicaddr(family, address, netmask, broadcast, ptp)]}</code></li>
-			<li>net_if_stats: <code>{[snicstats(isup, duplex, speed, mtu)]}</code></li>
-			<li>net_io_counters: <code>snetio(bytes_sent, bytes_recv, packets_sent, packets_recv, errin, errout, dropin, dropout)</code></li>
-			<li>swap_memory: <code>sswap(total, used, free, percent, sin, sout)</code></li>
-			<li>users: <code>[suser(name, terminal, host, started, pid)]</code></li>
-			<li>virtual_memory: <code>svmem(total, available, percent, used, free, active, inactive, buffers, cached, shared, slab)</code></li>
-		</ul>
-		<div style="height: 60px;"></div>
-	</body>
-</html>
+{% extends "./base.html" %}
+{% block title %}Client report{% endblock %}
+
+{% block content %}
+<h1>Client report</h1>
+<p><a href="{% url 'serverlist:client' client_report.client_id %}">&lt; back</a></p>
+<table border="1">
+	<tbody>
+		<tr>
+			<th>client_id</th>
+			<td>{{ client_report.client.client_id }}</td>
+		</tr>
+		<tr>
+			<th>IP</th>
+			<td>{{ client_report.ip }}</td>
+		</tr>
+		<tr>
+			<th>version</th>
+			<td>{{ client_report.version }}</td>
+		</tr>
+		<tr>
+			<th>date</th>
+			<td>{{ client_report.created_at }}</td>
+		</tr>
+		<tr>
+			<th>report</th>
+			<td><pre>{{ report_str }}</pre></td>
+		</tr>
+	<tbody>
+</table>
+<h4>格式说明</h4>
+<ul>
+	<li>cpu_freq: <code>scpufreq(current, min, max)</code></li>
+	<li>cpu_stats: <code>scpustats(ctx_switches, interrupts, soft_interrupts, syscalls)</code></li>
+	<li>cpu_times: <code>scputimes(user, nice, system, idle, iowait, irq, softirq, steal, guest, guest_nice)</code></li>
+	<li>cpu_times_percent: <code>scputimes(user, nice, system, idle, iowait, irq, softirq, steal, guest, guest_nice)</code></li>
+	<li>disk_io_counters: <code>sdiskio(read_count, write_count, read_bytes, write_bytes, read_time, write_time, read_merged_count, write_merged_count, busy_time)</code></li>
+	<li>disk_usage: <code>[sdiskpart(device, mountpoint, fstype, opts)]</code></li>
+	<li>cpu_freq: <code>sdiskusage(total, used, free, percent)</code></li>
+	<li>net_if_addrs: <code>{[snicaddr(family, address, netmask, broadcast, ptp)]}</code></li>
+	<li>net_if_stats: <code>{[snicstats(isup, duplex, speed, mtu)]}</code></li>
+	<li>net_io_counters: <code>snetio(bytes_sent, bytes_recv, packets_sent, packets_recv, errin, errout, dropin, dropout)</code></li>
+	<li>swap_memory: <code>sswap(total, used, free, percent, sin, sout)</code></li>
+	<li>users: <code>[suser(name, terminal, host, started, pid)]</code></li>
+	<li>virtual_memory: <code>svmem(total, available, percent, used, free, active, inactive, buffers, cached, shared, slab)</code></li>
+</ul>
+{% endblock %}

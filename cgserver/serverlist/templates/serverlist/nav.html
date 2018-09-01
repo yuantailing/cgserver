@@ -1,0 +1,7 @@
+<div>
+	{% if user.is_anonymous %}
+	<p><a href="{% url 'serverlist:index' %}">&lt;&lt; back to home</a> | Anonymous user</p>
+	{% else %}
+	<p><a href="{% url 'serverlist:index' %}">&lt;&lt; back to home</a> | {{ user.username }} | <a href="{% url 'serverlist:logout' %}">Logout</a></p>
+	{% endif %}
+</div>

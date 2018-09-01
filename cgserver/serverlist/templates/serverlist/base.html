@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+		<title>{% block title %}CG server{% endblock %}</title>
+		{% block head %}{% endblock %}
+	</head>
+	<body>
+		{% block nav %}{% include "./nav.html" %}{% endblock %}
+		<div class="container">
+			{% block content %}{{ content }}{% endblock %}
+		</div>
+		{% block footer %}{% include "./footer.html" %}{% endblock %}
+	</body>
+</html>

@@ -1,52 +1,47 @@
-<!DOCTYPE html>
-<html lang="en">
-	<head>
-		<title>Client</title>
-	</head>
-	<body>
-		<h1>Client</h1>
-		<p><a href="{% url 'serverlist:index' %}">&lt;&lt; back to home</a></p>
-		<table border="1">
-			<tbody>
-				<tr>
-					<th>client_id</th>
-					<td>{{ client.client_id }}</td>
-				</tr>
-				<tr>
-					<th>display_name</th>
-					<td>{{ client.display_name }}</td>
-				</tr>
-				<tr>
-					<th>manager</th>
-					<td>{{ client.manager }}</td>
-				</tr>
-				<tr>
-					<th>info</th>
-					<td>{{ client.info }}</td>
-				</tr>
-			<tbody>
-		</table>
-		<p>Client report</p>
-		<table border="1">
-			<thead>
-				<tr>
-					<th>Date</th>
-					<th>IP</th>
-					<th>version</th>
-					<th>详细</th>
-				</tr>
-			</thead>
-			<tbody>
-				{% for tr in client_reports %}
-				<tr>
-					<td>{{ tr.created_at }}</td>
-					<td>{{ tr.ip }}</td>
-					<td>{{ tr.version }}</td>
-					<td><a href="{% url 'serverlist:clientreport' client.pk tr.pk %}">详细</a></td>
-				</tr>
-				{% endfor %}
-			</tbody>
-		</table>
-		<div style="height: 60px;"></div>
-	</body>
-</html>
+{% extends "./base.html" %}
+{% block title %}Client{% endblock %}
+
+{% block content %}
+<h1>Client</h1>
+<table border="1">
+	<tbody>
+		<tr>
+			<th>client_id</th>
+			<td>{{ client.client_id }}</td>
+		</tr>
+		<tr>
+			<th>display_name</th>
+			<td>{{ client.display_name }}</td>
+		</tr>
+		<tr>
+			<th>manager</th>
+			<td>{{ client.manager }}</td>
+		</tr>
+		<tr>
+			<th>info</th>
+			<td>{{ client.info }}</td>
+		</tr>
+	<tbody>
+</table>
+<p>Client report</p>
+<table border="1">
+	<thead>
+		<tr>
+			<th>Date</th>
+			<th>IP</th>
+			<th>version</th>
+			<th>详细</th>
+		</tr>
+	</thead>
+	<tbody>
+		{% for tr in client_reports %}
+		<tr>
+			<td>{{ tr.created_at }}</td>
+			<td>{{ tr.ip }}</td>
+			<td>{{ tr.version }}</td>
+			<td><a href="{% url 'serverlist:clientreport' client.pk tr.pk %}">详细</a></td>
+		</tr>
+		{% endfor %}
+	</tbody>
+</table>
+{% endblock %}
