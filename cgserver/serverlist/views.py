@@ -212,28 +212,38 @@ def resetpassword(request):
         if form.is_valid():
             username = form.cleaned_data['username']
             password = form.cleaned_data['password']
-            validators = [
+            username_validator = auth.validators.ASCIIUsernameValidator()
+            password_validators = [
                 auth.password_validation.MinimumLengthValidator(),
                 auth.password_validation.UserAttributeSimilarityValidator(),
                 auth.password_validation.CommonPasswordValidator(),
                 auth.password_validation.NumericPasswordValidator(),
             ]
             with transaction.atomic():
-                exist = Employee.objects.filter(vpn_username=username).exclude(user=request.user).select_for_update().first()
-                if exist is not None:
-                    error = ['username taken']
+                try:
+                    username_validator(username)
+                except ValidationError as e:
+                    error = e
                 else:
-                    error = []
-                    request.user.employee.vpn_username = username
-                    if password:
-                        try:
-                            auth.password_validation.validate_password(password, request.user, password_validators=validators)
-                        except ValidationError as e:
-                            error = e
-                        else:
-                            request.user.set_password(password)
-                            request.user.employee.save()
-                            request.user.save()
+                    exist = Employee.objects.filter(vpn_username=username).exclude(user=request.user).select_for_update().first()
+                    if len(username) < 4:
+                        error = ['username too short']
+                    elif len(username) > 40:
+                        error = ['username too long']
+                    elif exist is not None:
+                        error = ['username taken']
+                    else:
+                        error = []
+                        request.user.employee.vpn_username = username
+                        if password:
+                            try:
+                                auth.password_validation.validate_password(password, request.user, password_validators=password_validators)
+                            except ValidationError as e:
+                                error = e
+                            else:
+                                request.user.set_password(password)
+                                request.user.employee.save()
+                                request.user.save()
             auth.login(request, request.user)
             if error:
                 return render(request, 'serverlist/resetpassword.html', {'form': form, 'error': error})
