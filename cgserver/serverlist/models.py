@@ -44,3 +44,15 @@ class Employee(models.Model):
     can_access = models.BooleanField(default=False)
     vpn_username = models.CharField(max_length=64, unique=True, db_index=True, default=uuid.uuid4)
     comment = models.CharField(max_length=64, blank=True, default='')
+
+    def __str__(self):
+        return 'Employee<{:s}>'.format(self.user.username)
+
+
+class AccessLog(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    ip = models.CharField(max_length=64, db_index=True, default=None)
+    target = models.CharField(max_length=64, db_index=True, default=None)
+    param = models.CharField(max_length=64, blank=True, default='')
+    info = models.TextField(blank=True, default='')
+    created_at = models.DateTimeField(auto_now_add=True)

@@ -8,7 +8,7 @@ import requests
 import time
 
 from .forms import ResetPasswordForm
-from .models import Client, ClientReport, Employee, UnknownReport
+from .models import AccessLog, Client, ClientReport, Employee, UnknownReport
 from cgserver import settings
 from django.contrib import auth
 from django.contrib.auth import authenticate
@@ -22,6 +22,13 @@ from django.views.decorators.csrf import csrf_exempt
 from six.moves import urllib
 
 # Create your views here.
+
+def get_ip(request):
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    if x_forwarded_for:
+        return x_forwarded_for.split(',')[0]
+    else:
+        return request.META.get('REMOTE_ADDR')
 
 def check_access(func):
     @functools.wraps(func)
@@ -40,6 +47,9 @@ def permissiondenied(request):
 
 @check_access
 def index(request):
+    print(dir(request))
+    print(request.path_info)
+    print(request.resolver_match)
     client_reports = ClientReport.objects.values('client_id').annotate(id=models.Max('id'))
     clients_no_report = Client.objects.exclude(id__in=[c['client_id'] for c in client_reports]).order_by('client_id')
     client_reports = ClientReport.objects.filter(id__in=[c['id'] for c in client_reports]).select_related('client').order_by('client__client_id')
@@ -100,18 +110,21 @@ def index(request):
         tr.append(client.manager)
         tr.append(client.info)
         table.append({'client': client, 'tr': tr})
+    AccessLog.objects.create(user=request.user, ip=get_ip(request), target='serverlist:index')
     return render(request, 'serverlist/index.html', {'table': table})
 
 @check_access
 def client(request, pk):
     client = get_object_or_404(Client.objects, pk=pk)
     client_reports = ClientReport.objects.filter(client=client).order_by('-created_at')
+    AccessLog.objects.create(user=request.user, ip=get_ip(request), target='serverlist:client', param=pk)
     return render(request, 'serverlist/client.html', {'client': client, 'client_reports': client_reports})
 
 @check_access
 def clientreport(request, client_id, report_id):
     client_report = get_object_or_404(ClientReport.objects.select_related('client'), id=report_id, client_id=client_id)
     report_str = pprint.pformat(json.loads(client_report.report), width=160)
+    AccessLog.objects.create(user=request.user, ip=get_ip(request), target='serverlist:clientreport', param=report_id)
     return render(request, 'serverlist/clientreport.html', {'client_report': client_report, 'report_str': report_str})
 
 @csrf_exempt
@@ -125,11 +138,7 @@ def recvreport(request):
         assert isinstance(version, type(u''))
     except:
         return HttpResponseBadRequest()
-    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
-    if x_forwarded_for:
-        ip = x_forwarded_for.split(',')[0]
-    else:
-        ip = request.META.get('REMOTE_ADDR')
+    ip = get_ip(request)
     client = Client.objects.filter(client_id=client_id, client_secret=client_secret).first()
     if client is None:
         unknown_report = UnknownReport(client_id=client_id, client_secret=client_secret, ip=ip, version=version)
@@ -142,6 +151,7 @@ def recvreport(request):
 
 @check_access
 def vpn(request):
+    AccessLog.objects.create(user=request.user, ip=get_ip(request), target='serverlist:vpn')
     return render(request, 'serverlist/vpn.html')
 
 def login(request):
@@ -207,6 +217,7 @@ def vpnauth(request):
         return JsonResponse({'error': 1, 'msg': 'no such user'}, json_dumps_params={'sort_keys': True})
     if not user.check_password(password):
         return JsonResponse({'error': 2, 'msg': 'password error'}, json_dumps_params={'sort_keys': True})
+    AccessLog.objects.create(user=user, ip=get_ip(request), target='serverlist:vpnauth')
     return JsonResponse({'error': 0, 'msg': 'ok'}, json_dumps_params={'sort_keys': True})
 
 @check_access
@@ -238,6 +249,10 @@ def resetpassword(request):
                         error = ['username taken']
                     else:
                         error = []
+                        if request.user.employee.vpn_username == username:
+                            changed = 'password' if password else 'none'
+                        else:
+                            changed = 'both' if password else 'username'
                         request.user.employee.vpn_username = username
                         if password:
                             try:
@@ -248,6 +263,9 @@ def resetpassword(request):
                                 request.user.set_password(password)
                                 request.user.employee.save()
                                 request.user.save()
+                        else:
+                            request.user.employee.save()
+                        AccessLog.objects.create(user=request.user, ip=get_ip(request), target='serverlist:resetpassword', param=changed)
             auth.login(request, request.user)
             if error:
                 return render(request, 'serverlist/resetpassword.html', {'form': form, 'error': error})
