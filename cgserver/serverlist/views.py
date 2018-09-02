@@ -172,6 +172,7 @@ def githubcallback(request):
     )
     user = user.json()
     username = 'github/{:d}'.format(user['id'])
+    login = user['login']
     comment = 'github/{:s}'.format(user['login'])
     email = user['email']
     if not email:
@@ -185,7 +186,10 @@ def githubcallback(request):
     if user is None:
         user = User.objects.create_user(username=username, email=email)
     if not hasattr(user, 'employee'):
-        Employee.objects.create(user=user, comment=comment)
+        try:
+            Employee.objects.create(user=user, comment=comment, vpn_username=login)
+        except:
+            Employee.objects.create(user=user, comment=comment)
     user.email = email
     user.save()
     auth.login(request, user)
