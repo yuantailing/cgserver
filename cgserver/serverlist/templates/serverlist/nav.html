@@ -2,6 +2,6 @@
 	{% if user.is_anonymous %}
 	<p><a href="{% url 'serverlist:index' %}">&lt;&lt; back to home</a> | Anonymous user | <a href="{% url 'serverlist:login' %}">login</a></p>
 	{% else %}
-	<p><a href="{% url 'serverlist:index' %}">&lt;&lt; back to home</a> | {{ user.username }} | <a href="{% url 'serverlist:logout' %}">logout</a></p>
+	<p><a href="{% url 'serverlist:index' %}">&lt;&lt; back to home</a> | <a href="{% url 'serverlist:permissiondenied' %}">{{ user.username }}</a> | <a href="{% url 'serverlist:logout' %}">logout</a></p>
 	{% endif %}
 </div>

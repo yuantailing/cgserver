@@ -43,13 +43,10 @@ def check_access(func):
     return _decorator
 
 def permissiondenied(request):
-    return render(request, 'serverlist/permissiondenied.html')
+    return render(request, 'serverlist/permissiondenied.html', {'GITHUB_CLIENT_ID': settings.GITHUB_CLIENT_ID})
 
 @check_access
 def index(request):
-    print(dir(request))
-    print(request.path_info)
-    print(request.resolver_match)
     client_reports = ClientReport.objects.values('client_id').annotate(id=models.Max('id'))
     clients_no_report = Client.objects.exclude(id__in=[c['client_id'] for c in client_reports]).order_by('client_id')
     client_reports = ClientReport.objects.filter(id__in=[c['id'] for c in client_reports]).select_related('client').order_by('client__client_id')
@@ -155,7 +152,7 @@ def vpn(request):
     return render(request, 'serverlist/vpn.html')
 
 def login(request):
-    return redirect('https://github.com/login/oauth/authorize?client_id={:s}&scope=user:email'.format(settings.GITHUB_CLIENT_ID))
+    return redirect('https://github.com/login/oauth/authorize?client_id={:s}'.format(settings.GITHUB_CLIENT_ID))
 
 def githubcallback(request):
     code = request.GET.get('code')
@@ -170,11 +167,11 @@ def githubcallback(request):
         }).encode(),
         headers={'Accept': 'application/json'},
     )
+    if not res.ok:
+        return HttpResponseBadRequest('bad verification code')
     res = res.json()
     if not res.get('access_token'):
         return HttpResponseBadRequest('bad verification code')
-    if not res.get('scope') or 'user:email' not in res['scope'].split(','):
-        return HttpResponseBadRequest('bad verification scope')
     access_token = res['access_token']
     user = requests.get(
         'https://api.github.com/user',
@@ -184,22 +181,24 @@ def githubcallback(request):
     username = 'github/{:d}'.format(user['id'])
     login = user['login']
     comment = 'github/{:s}'.format(user['login'])
-    email = user['email']
-    if not email:
-        emails = requests.get(
-            'https://api.github.com/user/emails',
-            headers={'Authorization': 'token {:s}'.format(access_token)}
-        )
-        emails = emails.json()
-        email = [o for o in emails if o['primary']][0]['email']
+    email = user['email'] or ''
+    members = requests.get(
+        'https://api.github.com/orgs/cscg-group/members'.format(login),
+        headers={'Authorization': 'token {:s}'.format(settings.GITHUB_PERSONAL_ACCESS_TOKEN)}
+    )
+    members = members.json()
+    access_by_org = user['id'] in [o['id'] for o in members]
     user = User.objects.filter(username=username).first()
     if user is None:
         user = User.objects.create_user(username=username, email=email)
     if not hasattr(user, 'employee'):
         try:
-            Employee.objects.create(user=user, comment=comment, vpn_username=login)
+            Employee.objects.create(user=user, can_access=access_by_org, vpn_username=login, comment=comment)
         except:
-            Employee.objects.create(user=user, comment=comment)
+            Employee.objects.create(user=user, can_access=access_by_org, comment=comment)
+    elif access_by_org:
+        user.employee.can_access = True
+        user.employee.save()
     user.email = email
     user.save()
     auth.login(request, user)
