@@ -1,3 +1,5 @@
+import uuid
+
 from django.contrib.auth.models import User
 from django.db import models
 
@@ -40,3 +42,5 @@ class UnknownReport(models.Model):
 class Employee(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     can_access = models.BooleanField(default=False)
+    vpn_username = models.CharField(max_length=64, unique=True, db_index=True, default=uuid.uuid4)
+    comment = models.CharField(max_length=64, blank=True, default='')

@@ -14,7 +14,7 @@ from django.contrib import auth
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
-from django.db import models
+from django.db import models, transaction
 from django.http import Http404, HttpResponseBadRequest, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -27,7 +27,7 @@ def check_access(func):
     @functools.wraps(func)
     def _decorator(request, *args, **kwargs):
         if request.user.is_anonymous:
-            return redirect('https://github.com/login/oauth/authorize?client_id={:s}&scope=user:email'.format(settings.GITHUB_CLIENT_ID))
+            return redirect(reverse('serverlist:permissiondenied'))
         if not hasattr(request.user, 'employee'):
             Employee.objects.create(user=request.user)
         if not request.user.employee.can_access:
@@ -144,6 +144,9 @@ def recvreport(request):
 def vpn(request):
     return render(request, 'serverlist/vpn.html')
 
+def login(request):
+    return redirect('https://github.com/login/oauth/authorize?client_id={:s}&scope=user:email'.format(settings.GITHUB_CLIENT_ID))
+
 def githubcallback(request):
     code = request.GET.get('code')
     if not code:
@@ -159,7 +162,6 @@ def githubcallback(request):
     )
     res = res.json()
     if not res.get('access_token'):
-        print(res)
         return HttpResponseBadRequest('bad verification code')
     if not res.get('scope') or 'user:email' not in res['scope'].split(','):
         return HttpResponseBadRequest('bad verification scope')
@@ -169,23 +171,44 @@ def githubcallback(request):
         headers={'Authorization': 'token {:s}'.format(access_token)}
     )
     user = user.json()
-    username = 'github/{:s}'.format(user['login'])
-    email = user['email']
+    username = 'github/{:d}'.format(user['id'])
+    comment = 'github/{:s}'.format(user['login'])
+    emails = requests.get(
+        'https://api.github.com/user/emails',
+        headers={'Authorization': 'token {:s}'.format(access_token)}
+    )
+    emails = emails.json()
+    email = emails[0]['email']
     user = User.objects.filter(username=username).first()
     if user is None:
         user = User.objects.create_user(username=username, email=email)
-    else:
-        if user.email != email:
-            user.email = email
-            user.save()
+    if not hasattr(user, 'employee'):
+        Employee.objects.create(user=user, comment=comment)
+    user.email = email
+    user.save()
     auth.login(request, user)
     return redirect(reverse('serverlist:index'))
+
+@csrf_exempt
+def vpnauth(request):
+    username = request.POST.get('username')
+    password = request.POST.get('password')
+    client_secret = request.POST.get('client_secret')
+    if client_secret != settings.VPN_CLIENT_SECRET:
+        return HttpResponseBadRequest('client secret error')
+    user = User.objects.filter(employee__vpn_username=username).first()
+    if not user:
+        return JsonResponse({'error': 1, 'msg': 'no such user'}, json_dumps_params={'sort_keys': True})
+    if not user.check_password(password):
+        return JsonResponse({'error': 2, 'msg': 'password error'}, json_dumps_params={'sort_keys': True})
+    return JsonResponse({'error': 0, 'msg': 'ok'}, json_dumps_params={'sort_keys': True})
 
 @check_access
 def resetpassword(request):
     if request.method == 'POST':
         form = ResetPasswordForm(request.POST)
         if form.is_valid():
+            username = form.cleaned_data['username']
             password = form.cleaned_data['password']
             validators = [
                 auth.password_validation.MinimumLengthValidator(),
@@ -193,18 +216,31 @@ def resetpassword(request):
                 auth.password_validation.CommonPasswordValidator(),
                 auth.password_validation.NumericPasswordValidator(),
             ]
-            try:
-                auth.password_validation.validate_password(password, request.user, password_validators=validators)
-            except ValidationError as e:
-                return render(request, 'serverlist/resetpassword.html', {'form': form, 'validation': e})
-            request.user.set_password(password)
-            request.user.save()
+            with transaction.atomic():
+                exist = Employee.objects.filter(vpn_username=username).exclude(user=request.user).select_for_update().first()
+                if exist is not None:
+                    error = ['username taken']
+                else:
+                    error = []
+                    request.user.employee.vpn_username = username
+                    if password:
+                        try:
+                            auth.password_validation.validate_password(password, request.user, password_validators=validators)
+                        except ValidationError as e:
+                            error = e
+                        else:
+                            request.user.set_password(password)
+                            request.user.employee.save()
+                            request.user.save()
             auth.login(request, request.user)
-            return render(request, 'serverlist/resetpassword_finish.html')
+            if error:
+                return render(request, 'serverlist/resetpassword.html', {'form': form, 'error': error})
+            else:
+                return render(request, 'serverlist/resetpassword_finish.html')
         return HttpResponseBadRequest('bad form')
     else:
-        form = ResetPasswordForm()
-        return render(request, 'serverlist/resetpassword.html', {'form': form, 'validation': []})
+        form = ResetPasswordForm(initial={'username': request.user.employee.vpn_username})
+        return render(request, 'serverlist/resetpassword.html', {'form': form, 'error': []})
 
 def logout(request):
     auth.logout(request)

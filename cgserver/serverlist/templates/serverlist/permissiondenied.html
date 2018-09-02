@@ -2,12 +2,27 @@
 {% block title %}Permission denied{% endblock %}
 
 {% block content %}
+
+{% if user.is_anonymous %}
+
+<h1>Permission denied</h1>
+<p>Please click "login" to login with GitHub account.</p>
+
+{% elif user.employee.can_access %}
+
+<h1>Welcome</h1>
+<p>username: <span>{{ user.username }}</span></p>
+<p>email: <span>{{ user.email }}</span></p>
+<p>comment: <span>{{ user.employee.comment }}</span></p>
+<p>Please click "back to home" to continue.</p>
+
+{% else %}
+
 <h1>Permission denied</h1>
 <p>username: <span>{{ user.username }}</span></p>
 <p>email: <span>{{ user.email }}</span></p>
-{% if user.is_anonymous %}
-<p>Please click "back to home" and login your account.</p>
-{% else %}
+<p>comment: <span>{{ user.employee.comment }}</span></p>
 <p>Please notify administrator to activate your account.</p>
+
 {% endif %}
 {% endblock %}
