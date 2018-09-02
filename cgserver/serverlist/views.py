@@ -217,6 +217,8 @@ def vpnauth(request):
     if not user.check_password(password):
         return JsonResponse({'error': 2, 'msg': 'password error'}, json_dumps_params={'sort_keys': True})
     AccessLog.objects.create(user=user, ip=get_ip(request), target='serverlist:vpnauth')
+    if not user.employee.can_access:
+        return JsonResponse({'error': 3, 'msg': 'no access'}, json_dumps_params={'sort_keys': True})
     return JsonResponse({'error': 0, 'msg': 'ok'}, json_dumps_params={'sort_keys': True})
 
 @check_access
