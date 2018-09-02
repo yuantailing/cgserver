@@ -173,12 +173,14 @@ def githubcallback(request):
     user = user.json()
     username = 'github/{:d}'.format(user['id'])
     comment = 'github/{:s}'.format(user['login'])
-    emails = requests.get(
-        'https://api.github.com/user/emails',
-        headers={'Authorization': 'token {:s}'.format(access_token)}
-    )
-    emails = emails.json()
-    email = emails[0]['email']
+    email = user['email']
+    if not email:
+        emails = requests.get(
+            'https://api.github.com/user/emails',
+            headers={'Authorization': 'token {:s}'.format(access_token)}
+        )
+        emails = emails.json()
+        email = [o for o in emails if o['primary']][0]['email']
     user = User.objects.filter(username=username).first()
     if user is None:
         user = User.objects.create_user(username=username, email=email)
