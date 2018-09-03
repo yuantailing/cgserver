@@ -6,8 +6,8 @@
 <p>Configuration file can be downloaded <a href="{% static 'serverlist/cscg.ovpn' %}">here</a>.</p>
 <p>OpenVPN software can be downloaded <a href="https://openvpn.net/index.php/open-source/downloads.html">here</a>.</p>
 <p>Mirror download (Installer, Windows 7 and later): <a href="http://cg.cs.tsinghua.edu.cn/vpn/static/openvpn-install-2.4.6-I602.exe">openvpn-install-2.4.6-I602.exe</a></p>
-<p><b>Username:</b> <span>{{ user.employee.vpn_username }}</span> | <a href="{% url 'serverlist:resetpassword' %}">change username</a></p>
-<p><b>Password:</b> <i>raw passwords are not stored, so there is no way to see this user's password</i> | <a href="{% url 'serverlist:resetpassword' %}">reset password</a></p>
+<p><b>Username:</b> <span>{{ user.username }}</span> | <a href="{% url 'serverlist:resetpassword' %}">change username</a></p>
+<p><b>Password:</b> *** | <a href="{% url 'serverlist:resetpassword' %}">reset password</a></p>
 <hr>
 
 <h3>FAQ</h3>

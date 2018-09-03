@@ -6,9 +6,10 @@ import os
 import pprint
 import requests
 import time
+import uuid
 
 from .forms import ResetPasswordForm
-from .models import AccessLog, Client, ClientReport, Employee, UnknownReport
+from .models import AccessLog, Client, ClientReport, Employee, GithubUser, UnknownReport
 from cgserver import settings
 from django.contrib import auth
 from django.contrib.auth import authenticate
@@ -173,34 +174,34 @@ def githubcallback(request):
     if not res.get('access_token'):
         return HttpResponseBadRequest('bad verification code')
     access_token = res['access_token']
-    user = requests.get(
+    guser = requests.get(
         'https://api.github.com/user',
         headers={'Authorization': 'token {:s}'.format(access_token)}
     )
-    user = user.json()
-    username = 'github/{:d}'.format(user['id'])
-    login = user['login']
-    comment = 'github/{:s}'.format(user['login'])
-    email = user['email'] or ''
+    guser = guser.json()
+    github_user = GithubUser.objects.filter(github_id=guser['id']).first()
+    with transaction.atomic():
+        if github_user is None:
+            try:
+                user = User.objects.create(username=guser['login'], email=guser['email'] or '')
+            except:
+                user = User.objects.create(username=uuid.uuid4(), email=guser['email'] or '')
+            github_user = GithubUser.objects.create(user=user, github_id=guser['id'], github_login=guser['login'], github_email=guser['email'])
+        else:
+            user = github_user.user
+            github_user.github_login = guser['login']
+            github_user.github_email = guser['email']
+            github_user.save()
     members = requests.get(
         'https://api.github.com/orgs/cscg-group/members'.format(login),
         headers={'Authorization': 'token {:s}'.format(settings.GITHUB_PERSONAL_ACCESS_TOKEN)}
     )
     members = members.json()
-    access_by_org = user['id'] in [o['id'] for o in members]
-    user = User.objects.filter(username=username).first()
-    if user is None:
-        user = User.objects.create_user(username=username, email=email)
-    if not hasattr(user, 'employee'):
-        try:
-            Employee.objects.create(user=user, can_access=access_by_org, vpn_username=login, comment=comment)
-        except:
-            Employee.objects.create(user=user, can_access=access_by_org, comment=comment)
-    elif access_by_org:
-        user.employee.can_access = True
-        user.employee.save()
-    user.email = email
-    user.save()
+    access_by_org = github_user.github_id in [o['id'] for o in members]
+    if access_by_org:
+        employee, created = Employee.objects.get_or_create(user=user)
+        employee.can_access = True
+        employee.save()
     auth.login(request, user)
     return redirect(reverse('serverlist:index'))
 
@@ -211,13 +212,13 @@ def vpnauth(request):
     client_secret = request.POST.get('client_secret')
     if client_secret != settings.VPN_CLIENT_SECRET:
         return HttpResponseBadRequest('client secret error')
-    user = User.objects.filter(employee__vpn_username=username).first()
+    user = User.objects.filter(username=username).first()
     if not user:
         return JsonResponse({'error': 1, 'msg': 'no such user'}, json_dumps_params={'sort_keys': True})
     if not user.check_password(password):
         return JsonResponse({'error': 2, 'msg': 'password error'}, json_dumps_params={'sort_keys': True})
     AccessLog.objects.create(user=user, ip=get_ip(request), target='serverlist:vpnauth')
-    if not user.employee.can_access:
+    if not hasattr(user, 'employee') or user.employee.can_access:
         return JsonResponse({'error': 3, 'msg': 'no access'}, json_dumps_params={'sort_keys': True})
     return JsonResponse({'error': 0, 'msg': 'ok'}, json_dumps_params={'sort_keys': True})
 
@@ -235,37 +236,34 @@ def resetpassword(request):
                 auth.password_validation.CommonPasswordValidator(),
                 auth.password_validation.NumericPasswordValidator(),
             ]
-            with transaction.atomic():
-                try:
-                    username_validator(username)
-                except ValidationError as e:
-                    error = e
-                else:
-                    exist = Employee.objects.filter(vpn_username=username).exclude(user=request.user).select_for_update().first()
+            try:
+                username_validator(username)
+            except ValidationError as e:
+                error = e
+            else:
+                with transaction.atomic():
+                    exists = User.objects.filter(username=username).exclude(id=request.user.id).select_for_update().exists()
                     if len(username) < 4:
                         error = ['username too short']
                     elif len(username) > 40:
                         error = ['username too long']
-                    elif exist is not None:
+                    elif exists:
                         error = ['username taken']
                     else:
                         error = []
-                        if request.user.employee.vpn_username == username:
-                            changed = 'password' if password else 'none'
+                        if request.user.username == username:
+                            changed = 'password'
                         else:
-                            changed = 'both' if password else 'username'
-                        request.user.employee.vpn_username = username
-                        if password:
-                            try:
-                                auth.password_validation.validate_password(password, request.user, password_validators=password_validators)
-                            except ValidationError as e:
-                                error = e
-                            else:
-                                request.user.set_password(password)
-                                request.user.employee.save()
-                                request.user.save()
+                            changed = 'both'
+                        request.user.username = username
+                        try:
+                            auth.password_validation.validate_password(password, request.user, password_validators=password_validators)
+                        except ValidationError as e:
+                            error = e
                         else:
+                            request.user.set_password(password)
                             request.user.employee.save()
+                            request.user.save()
                         AccessLog.objects.create(user=request.user, ip=get_ip(request), target='serverlist:resetpassword', param=changed)
             auth.login(request, request.user)
             if error:
@@ -274,7 +272,7 @@ def resetpassword(request):
                 return render(request, 'serverlist/resetpassword_finish.html')
         return HttpResponseBadRequest('bad form')
     else:
-        form = ResetPasswordForm(initial={'username': request.user.employee.vpn_username})
+        form = ResetPasswordForm(initial={'username': request.user.username})
         return render(request, 'serverlist/resetpassword.html', {'form': form, 'error': []})
 
 def logout(request):
