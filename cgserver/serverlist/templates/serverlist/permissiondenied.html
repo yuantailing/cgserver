@@ -5,7 +5,7 @@
 
 {% if user.is_anonymous %}
 
-<h1>Permission denied</h1>
+<h1>Login required</h1>
 <p>Please click "login" to login with GitHub account.</p>
 
 {% elif user.employee.can_access %}
