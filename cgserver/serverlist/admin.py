@@ -28,7 +28,7 @@ class EmployeeAdmin(admin.ModelAdmin):
 
     list_display = ('id', user_username, user_email, 'can_access', )
     list_filter = ('can_access', )
-    readonly_fields = (user_email, )
+    readonly_fields = (user_username, user_email, )
 
 
 class GithubUserAdmin(admin.ModelAdmin):

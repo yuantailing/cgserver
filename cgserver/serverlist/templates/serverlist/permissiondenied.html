@@ -13,7 +13,6 @@
 <h1>Welcome</h1>
 <p>username: <span>{{ user.username }}</span></p>
 <p>email: <span>{{ user.email }}</span></p>
-<p>comment: <span>{{ user.employee.comment }}</span></p>
 <p>Please click "back to home" to continue.</p>
 <p>Revoke your GitHub authorization? Click <a href="https://github.com/settings/connections/applications/{{ GITHUB_CLIENT_ID }}">here</a>.</p>
 
@@ -22,7 +21,6 @@
 <h1>Permission denied</h1>
 <p>username: <span>{{ user.username }}</span></p>
 <p>email: <span>{{ user.email }}</span></p>
-<p>comment: <span>{{ user.employee.comment }}</span></p>
 <p>Please notify administrator to activate your account.</p>
 <p>Revoke your GitHub authorization? Click <a href="https://github.com/settings/connections/applications/{{ GITHUB_CLIENT_ID }}">here</a>.</p>
 
