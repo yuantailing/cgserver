@@ -7,8 +7,8 @@ from django.contrib.auth.models import User
 
 class AccessLogAdmin(admin.ModelAdmin):
     list_display = ('id', 'user', 'ip', 'target', 'param', 'created_at', )
-    list_filter = ('id', 'user', 'ip', 'target', 'param', 'created_at', 'info', )
-    readonly_fields = ('user', 'ip', 'target', 'param', )
+    list_filter = ('user', 'ip', 'target', )
+    readonly_fields = ('user', 'ip', 'target', 'param', 'info', )
 
 class ClientAdmin(admin.ModelAdmin):
     list_display = ('id', 'client_id', 'display_name', 'created_at', )

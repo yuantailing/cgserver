@@ -4,4 +4,4 @@ from django.contrib.auth.models import User
 
 class ResetPasswordForm(forms.Form):
     username = forms.CharField()
-    password = forms.CharField(widget=forms.PasswordInput(), required=False)
+    password = forms.CharField(widget=forms.PasswordInput())

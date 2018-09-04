@@ -85,6 +85,7 @@ def index(request):
             else:
                 tr.append('NVML failed')
                 tr.append('N/A')
+                tr.append('N/A')
             users = [user[0] for user in report['users']]
             users = sorted(list(set(users)))
             if len(users) > 3:
