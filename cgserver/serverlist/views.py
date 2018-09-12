@@ -187,7 +187,7 @@ def githubcallback(request):
                 user = User.objects.create(username=guser['login'], email=guser['email'] or '')
             except:
                 user = User.objects.create(username=uuid.uuid4(), email=guser['email'] or '')
-            github_user = GithubUser.objects.create(user=user, github_id=guser['id'], github_login=guser['login'], github_email=guser['email'])
+            github_user = GithubUser.objects.create(user=user, github_id=guser['id'], github_login=guser['login'], github_email=guser['email'] or '')
         else:
             user = github_user.user
             github_user.github_login = guser['login']
