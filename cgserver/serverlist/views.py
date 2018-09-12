@@ -191,7 +191,7 @@ def githubcallback(request):
         else:
             user = github_user.user
             github_user.github_login = guser['login']
-            github_user.github_email = guser['email']
+            github_user.github_email = guser['email'] or ''
             github_user.save()
     members = requests.get(
         'https://api.github.com/orgs/cscg-group/members'.format(login),
