@@ -13,10 +13,10 @@
 <h3>FAQ</h3>
 <p>
 	Q: Windows 如何配置 OpenVPN<br>
-	A: 两种方案，推荐后一种，2.4 以上版本运行无需管理员权限<br>
-	A1: 运行 OpenVPN GUI，右下角托盘栏，Import file 导入配置文件，然后 Connect。如果是 2.3 以下版本，必须以管理员身份运行，否则无权限修改路由表，OpenVPN 即使连上也无法生效<br>
-	A2: 配置文件复制到 <i>C:\Program Files\OpenVPN\config</i>（如果 OpenVPN 版本是 2.4 以上，还可以把配置文件放在 <i>C:\Users\用户名\OpenVPN</i>），然后 Connect
-	&nbsp;&nbsp;2.4 以上版本运行无需管理员权限，详见后文
+	A: 两种方案<br>
+	A1: 运行 OpenVPN GUI，右下角托盘栏，Import file 导入配置文件，然后点 Connect<br>
+	A2: 配置文件复制到 <i>C:\Program Files\OpenVPN\config</i>，然后 Connect（如果 OpenVPN 版本 2.4 以上，还可以把配置文件放在 <i>C:\Users\用户名\OpenVPN</i>）<br>
+	注意：如果是 2.3 以下版本，必须以管理员身份运行，否则 OpenVPN 无权限修改路由表，即使连上也不会生效
 </p>
 <p>
 	Q: Linux 如何配置 OpenVPN<br>
@@ -26,10 +26,10 @@
 </p>
 <p>
 	Q: net.tsinghua.edu.cn 仍看到自己的帐号<br>
-	A: 校内流量不走 VPN，看到自己的帐号属于正常现象。检查流量是否走 VPN 的方法是打开 <a href="http://ip.cn">ip.cn</a> 或在百度上搜 <a href="https://www.baidu.com/s?wd=IP">IP</a>，Linux 检查方式 <code>$ curl ip.cn</code>。与此前 PPTP VPN 不同的是，你还可以放心地点“断开连接”，不会导致服务器掉线。
+	A: 校内流量不走 VPN，看到自己的帐号属于正常现象。检查流量是否走 VPN 的方法是打开 <a href="http://ip.cn">ip.cn</a> 或在百度上搜 <a href="https://www.baidu.com/s?wd=IP">IP</a>，Linux 检查方式 <code>$ curl ip.cn</code>。
 </p>
 <p>
-	Q: 免输密码<br>
+	Q: 免输密码（Windows OpenVPN 2.4 以上可以保存密码，无需此操作）<br>
 	A: 配置文件中 <code>auth-user-pass</code> 这行改为 <code>auth-user-pass account.txt</code>，新建 account.txt（与 cscg.ovpn 同目录），第一行填用户名，第二行填密码
 </p>
 <p>
