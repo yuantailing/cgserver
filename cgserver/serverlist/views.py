@@ -244,9 +244,9 @@ def resetpassword(request):
             else:
                 with transaction.atomic():
                     exists = User.objects.filter(username=username).exclude(id=request.user.id).select_for_update().exists()
-                    if len(username) < 4:
+                    if len(username) < 4 and request.user.username != username:
                         error = ['username too short']
-                    elif len(username) > 40:
+                    elif len(username) > 40 and request.user.username != username:
                         error = ['username too long']
                     elif exists:
                         error = ['username taken']
