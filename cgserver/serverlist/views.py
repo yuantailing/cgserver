@@ -153,6 +153,11 @@ def vpn(request):
     AccessLog.objects.create(user=request.user, ip=get_ip(request), target='serverlist:vpn')
     return render(request, 'serverlist/vpn.html')
 
+@check_access
+def proxy(request):
+    AccessLog.objects.create(user=request.user, ip=get_ip(request), target='serverlist:proxy')
+    return render(request, 'serverlist/proxy.html')
+
 def login(request):
     return redirect('https://github.com/login/oauth/authorize?client_id={:s}'.format(settings.GITHUB_CLIENT_ID))
 

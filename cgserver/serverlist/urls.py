@@ -11,6 +11,7 @@ urlpatterns = [
     re_path('^client/(?P<client_id>[0-9]+)/report/(?P<report_id>[0-9]+)$', views.clientreport, name='clientreport'),
     path('clientreport', views.recvreport),
     path('vpn', views.vpn, name='vpn'),
+    path('proxy', views.proxy, name='proxy'),
     path('login', views.login, name='login'),
     path('githubcallback', views.githubcallback, name='githubcallback'),
     path('vpnauth', views.vpnauth, name='vpnauth'),
