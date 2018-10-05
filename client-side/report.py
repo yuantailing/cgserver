@@ -5,7 +5,7 @@ import json
 from six.moves import urllib
 
 if __name__ == '__main__':
-    url = 'https://cgserver.tsing.net/serverlist/clientreport'    
+    url = 'https://cgserver.tsing.net/serverlist/clientreport'
     report = clienttask.alltasks()
     data = dict(
         client_id=settings.CLIENT_ID,

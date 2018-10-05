@@ -199,7 +199,7 @@ def githubcallback(request):
             github_user.github_email = guser['email'] or ''
             github_user.save()
     members = requests.get(
-        'https://api.github.com/orgs/cscg-group/members'.format(login),
+        'https://api.github.com/orgs/cscg-group/members',
         headers={'Authorization': 'token {:s}'.format(settings.GITHUB_PERSONAL_ACCESS_TOKEN)}
     )
     members = members.json()
@@ -235,6 +235,7 @@ def resetpassword(request):
         if form.is_valid():
             username = form.cleaned_data['username']
             password = form.cleaned_data['password']
+            has_error = True
             username_validator = auth.validators.ASCIIUsernameValidator()
             password_validators = [
                 auth.password_validation.MinimumLengthValidator(),
@@ -245,35 +246,37 @@ def resetpassword(request):
             try:
                 username_validator(username)
             except ValidationError as e:
-                error = e
+                for msg in e:
+                    form.add_error('username', msg)
             else:
                 with transaction.atomic():
                     exists = User.objects.filter(username=username).exclude(id=request.user.id).select_for_update().exists()
                     if len(username) < 4 and request.user.username != username:
-                        error = ['username too short']
+                        form.add_error('username', 'username too short')
                     elif len(username) > 40 and request.user.username != username:
-                        error = ['username too long']
+                        form.add_error('username', 'username too long')
                     elif exists:
-                        error = ['username taken']
+                        form.add_error('username', 'username taken')
                     else:
-                        error = []
-                        if request.user.username == username:
-                            changed = 'password'
-                        else:
-                            changed = 'both'
                         request.user.username = username
                         try:
                             auth.password_validation.validate_password(password, request.user, password_validators=password_validators)
                         except ValidationError as e:
-                            error = e
+                            for msg in e:
+                                form.add_error('password', msg)
                         else:
                             request.user.set_password(password)
                             request.user.employee.save()
                             request.user.save()
-                        AccessLog.objects.create(user=request.user, ip=get_ip(request), target='serverlist:resetpassword', param=changed)
+                            if request.user.username == username:
+                                changed = 'password'
+                            else:
+                                changed = 'both'
+                            AccessLog.objects.create(user=request.user, ip=get_ip(request), target='serverlist:resetpassword', param=changed)
+                            has_error = False
             auth.login(request, request.user)
-            if error:
-                return render(request, 'serverlist/resetpassword.html', {'form': form, 'error': error})
+            if has_error:
+                return render(request, 'serverlist/resetpassword.html', {'form': form})
             else:
                 return render(request, 'serverlist/resetpassword_finish.html')
         return HttpResponseBadRequest('bad form')
