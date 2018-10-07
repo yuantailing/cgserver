@@ -198,12 +198,11 @@ def githubcallback(request):
             github_user.github_login = guser['login']
             github_user.github_email = guser['email'] or ''
             github_user.save()
-    members = requests.get(
-        'https://api.github.com/orgs/cscg-group/members',
+    access_by_org = requests.get(
+        'https://api.github.com/orgs/cscg-group/members/{:s}'.format(guser['login']),
         headers={'Authorization': 'token {:s}'.format(settings.GITHUB_PERSONAL_ACCESS_TOKEN)}
     )
-    members = members.json()
-    access_by_org = github_user.github_id in [o['id'] for o in members]
+    access_by_org = access_by_org.status_code == 204
     if access_by_org:
         employee, created = Employee.objects.get_or_create(user=user)
         employee.can_access = True
