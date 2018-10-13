@@ -2,7 +2,7 @@
 {% load static %}
 
 {% block content %}
-<h1>Welcome to CSCG vpn</h1>
+<h1>Welcome to OpenVPN</h1>
 <p>Configuration file can be downloaded <a href="{% static 'serverlist/cscg.ovpn' %}">here</a>.</p>
 <p>OpenVPN software can be downloaded <a href="https://openvpn.net/index.php/open-source/downloads.html">here</a>.</p>
 <p>Mirror download (Installer, Windows 7 and later): <a href="http://open-access.oss-cn-beijing.aliyuncs.com/Downloads/openvpn-install-2.4.6-I602.exe">openvpn-install-2.4.6-I602.exe</a></p>
@@ -26,7 +26,7 @@
 </p>
 <p>
 	Q: net.tsinghua.edu.cn 仍看到自己的帐号<br>
-	A: 校内流量不走 VPN，看到自己的帐号属于正常现象。检查流量是否走 VPN 的方法是打开 <a href="http://ip.cn">ip.cn</a> 或在百度上搜 <a href="https://www.baidu.com/s?wd=IP">IP</a>，Linux 检查方式 <code>$ curl ip.cn</code>。
+	A: 校内流量不走 VPN，看到自己的帐号属于正常现象。检查流量是否走 VPN 的方法是打开 <a href="http://ip.cn">ip.cn</a> 或在百度上搜 <a href="https://www.baidu.com/s?wd=IP">IP</a>，Linux 检查方式 <code>$ curl ip.cn</code> 或 <code>$ curl ifconfig.co</code>
 </p>
 <p>
 	Q: 免输密码（Windows OpenVPN 2.4 以上可以保存密码，无需此操作）<br>
@@ -38,6 +38,6 @@
 </p>
 <p>
 	Q: OpenVPN 与 PPTP 相比，有什么优缺点<br>
-	A: 缺点：系统不自带，需要安装软件。优点：容易配置路由表，校内、校外流量分开走；可以穿透 NAT，在更复杂的网络环境下可以连接；子网内部可以 P2P 连接
+	A: 缺点：系统不自带，需要安装软件。优点：容易配置路由表，校内、校外流量分开走；能穿透 NAT 的类型比 PPTP 多，在更复杂的网络环境下可以连接
 </p>
 {% endblock %}

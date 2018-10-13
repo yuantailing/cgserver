@@ -10,7 +10,7 @@ import uuid
 
 from .forms import ResetPasswordForm
 from .models import AccessLog, Client, ClientReport, Employee, GithubUser, UnknownReport
-from cgserver import settings
+from django.conf import settings
 from django.contrib import auth
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
@@ -152,6 +152,18 @@ def recvreport(request):
 def vpn(request):
     AccessLog.objects.create(user=request.user, ip=get_ip(request), target='serverlist:vpn')
     return render(request, 'serverlist/vpn.html')
+
+@check_access
+def pptp(request):
+    AccessLog.objects.create(user=request.user, ip=get_ip(request), target='serverlist:pptp')
+    passwords = dict(
+        PPTP_USERNAME=settings.PPTP_USERNAME,
+        PPTP_PASSWORD=settings.PPTP_PASSWORD,
+        L2TP_PRESHAREDKEY=settings.L2TP_PRESHAREDKEY,
+        L2TP_USERNAME=settings.L2TP_USERNAME,
+        L2TP_PASSWORD=settings.L2TP_PASSWORD,
+    )
+    return render(request, 'serverlist/pptp.html', passwords)
 
 @check_access
 def proxy(request):
