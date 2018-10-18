@@ -155,7 +155,6 @@ def vpn(request):
 
 @check_access
 def pptp(request):
-    AccessLog.objects.create(user=request.user, ip=get_ip(request), target='serverlist:pptp')
     passwords = dict(
         PPTP_USERNAME=settings.PPTP_USERNAME,
         PPTP_PASSWORD=settings.PPTP_PASSWORD,
@@ -163,7 +162,21 @@ def pptp(request):
         L2TP_USERNAME=settings.L2TP_USERNAME,
         L2TP_PASSWORD=settings.L2TP_PASSWORD,
     )
+    AccessLog.objects.create(user=request.user, ip=get_ip(request), target='serverlist:pptp')
     return render(request, 'serverlist/pptp.html', passwords)
+
+@check_access
+def ftp(request):
+    passwords = dict(
+        FTP_TMP_PASSWORD=settings.FTP_TMP_PASSWORD,
+    )
+    AccessLog.objects.create(user=request.user, ip=get_ip(request), target='serverlist:ftp')
+    return render(request, 'serverlist/ftp.html', passwords)
+
+@check_access
+def download(request):
+    AccessLog.objects.create(user=request.user, ip=get_ip(request), target='serverlist:download')
+    return render(request, 'serverlist/download.html')
 
 @check_access
 def proxy(request):

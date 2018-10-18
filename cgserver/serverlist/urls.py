@@ -12,6 +12,8 @@ urlpatterns = [
     path('clientreport', views.recvreport),
     path('vpn', views.vpn, name='vpn'),
     path('pptp', views.pptp, name='pptp'),
+    path('ftp', views.ftp, name='ftp'),
+    path('download', views.download, name='download'),
     path('proxy', views.proxy, name='proxy'),
     path('login', views.login, name='login'),
     path('githubcallback', views.githubcallback, name='githubcallback'),

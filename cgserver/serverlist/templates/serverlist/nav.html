@@ -2,8 +2,6 @@
 	{% if user.is_anonymous %}
 	<p>
 		<a href="{% url 'serverlist:index' %}">&lt;&lt; back to home</a> |
-		openvpn |
-		pptp/l2tp |
 		Anonymous user |
 		<a href="{% url 'serverlist:login' %}">login</a>
 	</p>
@@ -12,6 +10,8 @@
 		<a href="{% url 'serverlist:index' %}">&lt;&lt; back to home</a> |
 		<a href="{% url 'serverlist:vpn' %}">openvpn</a> |
 		<a href="{% url 'serverlist:pptp' %}">pptp/l2tp</a> |
+		<a href="{% url 'serverlist:ftp' %}">ftp</a> |
+		<a href="{% url 'serverlist:download' %}">download</a> |
 		<a href="{% url 'serverlist:permissiondenied' %}">{{ user.username }}</a> |
 		<a href="{% url 'serverlist:logout' %}">logout</a>
 	</p>
