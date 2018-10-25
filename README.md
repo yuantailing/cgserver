@@ -19,6 +19,8 @@ python3 manage.py runscript add_clients
 python3 manage.py runserver
 ```
 
+You may run `python3 manage.py createsuperuser` to add an administrator.
+
 ### Client-side
 
 ```shell
@@ -26,8 +28,8 @@ pip3 install -r requirements.txt
 cp settings.py.sample settings.py
 ```
 
-Update crontab, for example:
+Add *report.py* to crontab, for example:
 
-> 0,15,30,45 * * * * python3 some-path/client-side/report.py
+> */15 * * * * nobody python3 /path/to/client-side/report.py
 
 ## Todo

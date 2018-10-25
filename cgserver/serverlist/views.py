@@ -10,6 +10,8 @@ import uuid
 
 from .forms import ResetPasswordForm
 from .models import AccessLog, Client, ClientReport, Employee, GithubUser, UnknownReport
+from aliyunsdkalidns.request.v20150109 import AddDomainRecordRequest, UpdateDomainRecordRequest, DescribeDomainRecordsRequest, DeleteDomainRecordRequest
+from aliyunsdkcore.client import AcsClient
 from django.conf import settings
 from django.contrib import auth
 from django.contrib.auth import authenticate
@@ -144,8 +146,44 @@ def recvreport(request):
         unknown_report.save()
         raise Http404
     else:
-        client_report = ClientReport(client=client, ip=ip, version=version, report=json.dumps(report, sort_keys=True))
-        client_report.save()
+        def alidns_update(dns_domain, dns_rr, ip):
+            clt = AcsClient(settings.ALIYUN_ACCESS_KEY_ID, settings.ALIYUN_ACCESS_KEY_SECRET, 'cn-hangzhou')
+            request = DescribeDomainRecordsRequest.DescribeDomainRecordsRequest()
+            request.set_DomainName(dns_domain)
+            request.set_PageSize(500)
+            request.set_accept_format('json')
+            result = clt.do_action_with_exception(request)
+            result = json.loads(result.decode('utf-8'))
+            result = result['DomainRecords']['Record']
+            old = [o for o in result if o['RR'] == dns_rr and o['Status'] == 'ENABLE']
+            for x in old[1:]:
+                request = DeleteDomainRecordRequest.DeleteDomainRecordRequest()
+                request.set_RecordId(x['RecordId'])
+                result = clt.do_action_with_exception(request)
+            if len(old) == 0:
+                request = AddDomainRecordRequest.AddDomainRecordRequest()
+                request.set_DomainName(dns_domain)
+                request.set_RR(dns_rr)
+                request.set_Type('A')
+                request.set_Value(ip)
+                request.set_TTL(600)
+                request.set_Line('default')
+                result = clt.do_action_with_exception(request)
+            else:
+                rc = old[0]
+                if rc['Type'] != 'A' or rc['Value'] != ip or rc['TTL'] != 600 or rc['Line'] != 'default':
+                    request = UpdateDomainRecordRequest.UpdateDomainRecordRequest()
+                    request.set_RecordId(rc['RecordId'])
+                    request.set_RR(dns_rr)
+                    request.set_Type('A')
+                    request.set_Value(ip)
+                    request.set_TTL(600)
+                    request.set_Line('default')
+                    result = clt.do_action_with_exception(request)
+        with transaction.atomic():
+            client_report = ClientReport.objects.create(client=client, ip=ip, version=version, report=json.dumps(report, sort_keys=True))
+            if settings.ALIDNS_DOMAIN:
+                alidns_update(settings.ALIDNS_DOMAIN, client_id + '.cgdns', ip)
     return JsonResponse({'error': 0, 'msg': 'ok'}, json_dumps_params={'sort_keys': True})
 
 @check_access
