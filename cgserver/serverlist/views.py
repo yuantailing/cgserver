@@ -33,6 +33,9 @@ def get_ip(request):
     else:
         return request.META.get('REMOTE_ADDR')
 
+def concat_dns_rr(client_id):
+    return client_id + '.cgdns'
+
 def check_access(func):
     @functools.wraps(func)
     def _decorator(request, *args, **kwargs):
@@ -64,7 +67,10 @@ def index(request):
         tr = []
         tr.append(client.display_name or client.client_id)
         tr.append(report['platform'])
-        tr.append(client_report.ip)
+        ips = [client_report.ip]
+        if settings.ALIDNS_DOMAIN:
+            ips.append(concat_dns_rr(client.client_id) + '.' + settings.ALIDNS_DOMAIN)
+        tr.append(ips)
         if status == 'ok':
             tr.append([
                     '{:d} 核 (使用率 {:.0f}%)'.format(report['cpu_count'], report['cpu_percent'], 0),
@@ -183,7 +189,7 @@ def recvreport(request):
         with transaction.atomic():
             client_report = ClientReport.objects.create(client=client, ip=ip, version=version, report=json.dumps(report, sort_keys=True))
             if settings.ALIDNS_DOMAIN:
-                alidns_update(settings.ALIDNS_DOMAIN, client_id + '.cgdns', ip)
+                alidns_update(settings.ALIDNS_DOMAIN, concat_dns_rr(client_id), ip)
     return JsonResponse({'error': 0, 'msg': 'ok'}, json_dumps_params={'sort_keys': True})
 
 @check_access
