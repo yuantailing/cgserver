@@ -32,6 +32,7 @@ ALLOWED_HOSTS = ['cgserver.tsing.net']
 
 INSTALLED_APPS = [
     'serverlist.apps.ServerlistConfig',
+    'django_extensions',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
