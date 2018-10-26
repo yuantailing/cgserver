@@ -1,4 +1,5 @@
 import base64
+import boto3
 import functools
 import json
 import math
@@ -10,8 +11,6 @@ import uuid
 
 from .forms import ResetPasswordForm
 from .models import AccessLog, Client, ClientReport, Employee, GithubUser, UnknownReport
-from aliyunsdkalidns.request.v20150109 import AddDomainRecordRequest, UpdateDomainRecordRequest, DescribeDomainRecordsRequest, DeleteDomainRecordRequest
-from aliyunsdkcore.client import AcsClient
 from django.conf import settings
 from django.contrib import auth
 from django.contrib.auth import authenticate
@@ -32,9 +31,6 @@ def get_ip(request):
         return x_forwarded_for.split(',')[0]
     else:
         return request.META.get('REMOTE_ADDR')
-
-def concat_dns_rr(client_id):
-    return client_id + '.cgdns'
 
 def check_access(func):
     @functools.wraps(func)
@@ -68,8 +64,8 @@ def index(request):
         tr.append(client.display_name or client.client_id)
         tr.append(report['platform'])
         ips = [client_report.ip]
-        if settings.ALIDNS_DOMAIN:
-            ips.append(concat_dns_rr(client.client_id) + '.' + settings.ALIDNS_DOMAIN)
+        if settings.ROUTE53_DOMAIN_NAME:
+            ips.append(client.client_id.lower() + '.' + settings.ROUTE53_DOMAIN_NAME)
         tr.append(ips)
         if status == 'ok':
             tr.append([
@@ -152,44 +148,30 @@ def recvreport(request):
         unknown_report.save()
         raise Http404
     else:
-        def alidns_update(dns_domain, dns_rr, ip):
-            clt = AcsClient(settings.ALIYUN_ACCESS_KEY_ID, settings.ALIYUN_ACCESS_KEY_SECRET, 'cn-hangzhou')
-            request = DescribeDomainRecordsRequest.DescribeDomainRecordsRequest()
-            request.set_DomainName(dns_domain)
-            request.set_PageSize(500)
-            request.set_accept_format('json')
-            result = clt.do_action_with_exception(request)
-            result = json.loads(result.decode('utf-8'))
-            result = result['DomainRecords']['Record']
-            old = [o for o in result if o['RR'] == dns_rr and o['Status'] == 'ENABLE']
-            for x in old[1:]:
-                request = DeleteDomainRecordRequest.DeleteDomainRecordRequest()
-                request.set_RecordId(x['RecordId'])
-                result = clt.do_action_with_exception(request)
-            if len(old) == 0:
-                request = AddDomainRecordRequest.AddDomainRecordRequest()
-                request.set_DomainName(dns_domain)
-                request.set_RR(dns_rr)
-                request.set_Type('A')
-                request.set_Value(ip)
-                request.set_TTL(600)
-                request.set_Line('default')
-                result = clt.do_action_with_exception(request)
-            else:
-                rc = old[0]
-                if rc['Type'] != 'A' or rc['Value'] != ip or rc['TTL'] != 600 or rc['Line'] != 'default':
-                    request = UpdateDomainRecordRequest.UpdateDomainRecordRequest()
-                    request.set_RecordId(rc['RecordId'])
-                    request.set_RR(dns_rr)
-                    request.set_Type('A')
-                    request.set_Value(ip)
-                    request.set_TTL(600)
-                    request.set_Line('default')
-                    result = clt.do_action_with_exception(request)
         with transaction.atomic():
             client_report = ClientReport.objects.create(client=client, ip=ip, version=version, report=json.dumps(report, sort_keys=True))
-            if settings.ALIDNS_DOMAIN:
-                alidns_update(settings.ALIDNS_DOMAIN, concat_dns_rr(client_id), ip)
+            if settings.ROUTE53_DOMAIN_NAME:
+                client = boto3.Session(
+                    aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+                    aws_secret_access_key=settings.AWS_ACCESS_KEY_SECRET,
+                ).client('route53')
+                client.change_resource_record_sets(
+                    HostedZoneId=settings.ROUTE53_HOSTED_ZONE_ID,
+                    ChangeBatch={
+                        'Comment': '',
+                        'Changes': [
+                            {
+                                'Action': 'UPSERT',
+                                'ResourceRecordSet': {
+                                    'Name': client_id.lower() + '.' + settings.ROUTE53_DOMAIN_NAME,
+                                    'Type': 'A',
+                                    'TTL': 120,
+                                    'ResourceRecords': [{'Value': ip},],
+                                }
+                            },
+                        ],
+                    },
+                )
     return JsonResponse({'error': 0, 'msg': 'ok'}, json_dumps_params={'sort_keys': True})
 
 @check_access
