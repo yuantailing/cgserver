@@ -10,6 +10,13 @@ import sys
 
 from pprint import pprint
 
+
+def disk_usage(path):
+    try:
+        return psutil.disk_usage(path)
+    except PermissionError:
+        return psutil._common.sdiskusage(0, 0, 0, 0)
+
 def gputask():
     def get(handle):
         memory_info=pynvml.nvmlDeviceGetMemoryInfo(handle)
@@ -56,7 +63,7 @@ def alltasks(ensure_json=True):
         cpu_times_percent=psutil.cpu_times_percent(),
         disk_io_counters=psutil.disk_io_counters(),
         disk_partitions=psutil.disk_partitions(),
-        disk_usage=[psutil.disk_usage(part.mountpoint) for part in psutil.disk_partitions()],
+        disk_usage=[disk_usage(part.mountpoint) for part in psutil.disk_partitions()],
         net_if_addrs=psutil.net_if_addrs(),
         net_if_stats=psutil.net_if_stats(),
         net_io_counters=psutil.net_io_counters(),
