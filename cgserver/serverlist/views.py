@@ -122,7 +122,7 @@ def index(request):
 @check_access
 def client(request, pk):
     client = get_object_or_404(Client.objects, pk=pk)
-    client_reports = ClientReport.objects.filter(client=client).order_by('-created_at')
+    client_reports = ClientReport.objects.filter(client=client).order_by('-id')
     paginator = Paginator(client_reports, 100)
     client_reports = paginator.get_page(request.GET.get('page'))
     AccessLog.objects.create(user=request.user, ip=get_ip(request), target='serverlist:client', param=pk)
