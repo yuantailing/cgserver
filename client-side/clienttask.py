@@ -17,6 +17,14 @@ def disk_usage(path):
     except PermissionError:
         return psutil._common.sdiskusage(0, 0, 0, 0)
 
+
+def get_fan_speed(handle):
+    try:
+        return pynvml.nvmlDeviceGetFanSpeed(handle)
+    except pynvml.NVMLError_NotSupported:
+        return None
+
+
 def gputask():
     def get(handle):
         memory_info=pynvml.nvmlDeviceGetMemoryInfo(handle)
@@ -31,7 +39,12 @@ def gputask():
                 gpu=pynvml.nvmlDeviceGetUtilizationRates(handle).gpu,
                 memory=pynvml.nvmlDeviceGetUtilizationRates(handle).memory,
             ),
-            nvmlDeviceGetFanSpeed=pynvml.nvmlDeviceGetFanSpeed(handle),
+            nvmlDeviceGetFanSpeed=get_fan_speed(handle),
+            nvmlDeviceGetTemperature=pynvml.nvmlDeviceGetTemperature(handle, pynvml.NVML_TEMPERATURE_GPU),
+            nvmlDeviceGetTemperatureThreshold=dict(
+                slowdown=pynvml.nvmlDeviceGetTemperatureThreshold(handle, pynvml.NVML_TEMPERATURE_THRESHOLD_SLOWDOWN),
+                shutdown=pynvml.nvmlDeviceGetTemperatureThreshold(handle, pynvml.NVML_TEMPERATURE_THRESHOLD_SHUTDOWN),
+            ),
             nvmlDeviceGetPowerManagementLimit=pynvml.nvmlDeviceGetPowerManagementLimit(handle),
             nvmlDeviceGetPowerUsage=pynvml.nvmlDeviceGetPowerUsage(handle),
         )
@@ -48,10 +61,11 @@ def gputask():
             nvml_version=None,
         )
 
+
 def alltasks(ensure_json=True):
     assert psutil._PY3
     res = dict(
-        version='0.1.0',
+        version='0.1.1',
         platform=sys.platform,
         boot_time=psutil.boot_time(),
         loadavg=hasattr(os, 'getloadavg') and os.getloadavg() or None,
@@ -79,4 +93,3 @@ def alltasks(ensure_json=True):
 
 if __name__ == '__main__':
     pprint(alltasks(ensure_json=False))
-

@@ -16,6 +16,7 @@ from django.contrib import auth
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
+from django.core.paginator import Paginator
 from django.db import models, transaction
 from django.http import Http404, HttpResponseBadRequest, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -58,8 +59,8 @@ def index(request):
         client = client_report.client
         report = json.loads(client_report.report)
         status = 'ok'
-        if client_report.version != '0.1.0':
-            status = '监测脚本过旧'
+        if client_report.version != '0.1.1':
+            status = '监测脚本不匹配'
         tr = []
         tr.append(client.display_name or client.client_id)
         tr.append(report['platform'])
@@ -69,7 +70,7 @@ def index(request):
         tr.append(ips)
         if status == 'ok':
             tr.append([
-                    '{:d} 核 (使用率 {:.0f}%)'.format(report['cpu_count'], report['cpu_percent'], 0),
+                    '{:d} 核 (使用率 {:.0f}%)'.format(report['cpu_count'], report['cpu_percent']),
                     '最高主频 {:.1f}GHz'.format(report['cpu_freq'][2] / 1000),
                 ])
             tr.append('N/A' if report['loadavg'] is None else '{:.1f}'.format(report['loadavg'][0]))
@@ -81,10 +82,12 @@ def index(request):
                         dev['nvmlDeviceGetMemoryInfo']['total'] / 1024**3,
                         dev['nvmlDeviceGetMemoryInfo']['used'] / dev['nvmlDeviceGetMemoryInfo']['total'] * 100,
                     ) for dev in report['nvmlDevices']])
-                tr.append(['{:d}% ({:.0f}W/{:.0f}W)'.format(
+                tr.append(['{:d}% ({:.0f}W/{:.0f}W) {:d}℃/{:d}℃'.format(
                         dev['nvmlDeviceGetUtilizationRates']['gpu'],
                         dev['nvmlDeviceGetPowerUsage'] / 1000,
                         dev['nvmlDeviceGetPowerManagementLimit'] / 1000,
+                        dev['nvmlDeviceGetTemperature'],
+                        dev['nvmlDeviceGetTemperatureThreshold']['slowdown'],
                     ) for dev in report['nvmlDevices']])
             else:
                 tr.append('NVML failed')
@@ -120,6 +123,8 @@ def index(request):
 def client(request, pk):
     client = get_object_or_404(Client.objects, pk=pk)
     client_reports = ClientReport.objects.filter(client=client).order_by('-created_at')
+    paginator = Paginator(client_reports, 100)
+    client_reports = paginator.get_page(request.GET.get('page'))
     AccessLog.objects.create(user=request.user, ip=get_ip(request), target='serverlist:client', param=pk)
     return render(request, 'serverlist/client.html', {'client': client, 'client_reports': client_reports})
 
