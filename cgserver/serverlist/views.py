@@ -82,8 +82,8 @@ def index(request):
                         dev['nvmlDeviceGetMemoryInfo']['total'] / 1024**3,
                         dev['nvmlDeviceGetMemoryInfo']['used'] / dev['nvmlDeviceGetMemoryInfo']['total'] * 100,
                     ) for dev in report['nvmlDevices']])
-                tr.append(['{:d}% ({:.0f}W/{:.0f}W) {:d}℃/{:d}℃'.format(
-                        dev['nvmlDeviceGetUtilizationRates']['gpu'],
+                tr.append(['{:s}% ({:.0f}W/{:.0f}W) {:d}℃/{:d}℃'.format(
+                        '-' if dev['nvmlDeviceGetUtilizationRates']['gpu'] is None else '{:d}'.format(dev['nvmlDeviceGetUtilizationRates']['gpu']),
                         dev['nvmlDeviceGetPowerUsage'] / 1000,
                         dev['nvmlDeviceGetPowerManagementLimit'] / 1000,
                         dev['nvmlDeviceGetTemperature'],

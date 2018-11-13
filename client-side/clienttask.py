@@ -18,6 +18,19 @@ def disk_usage(path):
         return psutil._common.sdiskusage(0, 0, 0, 0)
 
 
+def get_utilization_rates(handle):
+    try:
+        return dict(
+            gpu=pynvml.nvmlDeviceGetUtilizationRates(handle).gpu,
+            memory=pynvml.nvmlDeviceGetUtilizationRates(handle).memory,
+        ),
+    except pynvml.NVMLError_Unknown:
+        return dict(
+            gpu=None,
+            memory=None,
+        )
+
+
 def get_fan_speed(handle):
     try:
         return pynvml.nvmlDeviceGetFanSpeed(handle)
@@ -35,10 +48,7 @@ def gputask():
                 free=memory_info.free,
                 used=memory_info.used,
             ),
-            nvmlDeviceGetUtilizationRates=dict(
-                gpu=pynvml.nvmlDeviceGetUtilizationRates(handle).gpu,
-                memory=pynvml.nvmlDeviceGetUtilizationRates(handle).memory,
-            ),
+            nvmlDeviceGetUtilizationRates=get_utilization_rates(handle),
             nvmlDeviceGetFanSpeed=get_fan_speed(handle),
             nvmlDeviceGetTemperature=pynvml.nvmlDeviceGetTemperature(handle, pynvml.NVML_TEMPERATURE_GPU),
             nvmlDeviceGetTemperatureThreshold=dict(
