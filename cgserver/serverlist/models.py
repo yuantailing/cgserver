@@ -1,3 +1,5 @@
+import datetime
+
 from django.contrib.auth.models import User
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
@@ -46,7 +48,7 @@ class Employee(models.Model):
     )
     shadow_password = models.CharField(max_length=255, blank=True)
     nt_password_hash = models.CharField(max_length=64, blank=True)
-    password_updated_at = models.DateTimeField(default='2018-01-01 00:00:00')
+    password_updated_at = models.DateTimeField(default=datetime.datetime(2018, 1, 1))
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
