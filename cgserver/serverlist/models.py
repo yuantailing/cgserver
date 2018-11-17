@@ -1,4 +1,5 @@
 from django.contrib.auth.models import User
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
 # Create your models here.
@@ -37,6 +38,17 @@ class ClientReport(models.Model):
 class Employee(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     can_access = models.BooleanField(default=False)
+    staff_number = models.IntegerField(unique=True, blank=True, null=True,
+        validators=[
+            MinValueValidator(1),
+            MaxValueValidator(999),
+        ],
+    )
+    shadow_password = models.CharField(max_length=255, blank=True)
+    nt_password_hash = models.CharField(max_length=64, blank=True)
+    password_updated_at = models.DateTimeField(default='2018-01-01 00:00:00')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return 'Employee<{:s}>'.format(self.user.username)
@@ -47,6 +59,8 @@ class GithubUser(models.Model):
     github_id = models.IntegerField(unique=True, default=None)
     github_email = models.CharField(max_length=64, db_index=True, default=None)
     github_login = models.CharField(max_length=64, db_index=True, default=None)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
 
 class UnknownReport(models.Model):

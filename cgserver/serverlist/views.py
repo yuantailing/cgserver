@@ -1,5 +1,6 @@
 import base64
 import boto3
+import crypt
 import functools
 import json
 import math
@@ -18,10 +19,13 @@ from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
 from django.db import models, transaction
+from django.db.models import Max
 from django.http import Http404, HttpResponseBadRequest, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
+from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
+from helper import md4
 from six.moves import urllib
 
 # Create your views here.
@@ -42,6 +46,9 @@ def check_access(func):
             Employee.objects.create(user=request.user)
         if not request.user.employee.can_access:
             return redirect(reverse('serverlist:permissiondenied'))
+        if not request.user.employee.staff_number:
+            request.user.employee.staff_number = 1 + (Employee.objects.all().aggregate(Max('staff_number'))['staff_number__max'] or 0)
+            request.user.employee.save()
         return func(request, *args, **kwargs)
     return _decorator
 
@@ -197,6 +204,14 @@ def pptp(request):
     return render(request, 'serverlist/pptp.html', passwords)
 
 @check_access
+def nas(request):
+    uid = '{:d}'.format(request.user.employee.staff_number + 10000)
+    home = '/nas/{:s}'.format(uid)
+    password_set = 0 < len(request.user.employee.shadow_password) and 0 < len(request.user.employee.nt_password_hash)
+    AccessLog.objects.create(user=request.user, ip=get_ip(request), target='serverlist:nas')
+    return render(request, 'serverlist/nas.html', {'password_set': password_set, 'uid': uid, 'home': home})
+
+@check_access
 def ftp(request):
     passwords = dict(
         FTP_TMP_PASSWORD=settings.FTP_TMP_PASSWORD,
@@ -283,6 +298,41 @@ def vpnauth(request):
         return JsonResponse({'error': 3, 'msg': 'no access'}, json_dumps_params={'sort_keys': True})
     return JsonResponse({'error': 0, 'msg': 'ok'}, json_dumps_params={'sort_keys': True})
 
+@csrf_exempt
+def cgnas_api(request):
+    api_secret = request.POST.get('api_secret')
+    if api_secret != settings.CGNAS_API_SECRET:
+        return HttpResponseBadRequest('client secret error')
+
+    def latest_password_update():
+        recent_one = Employee.objects.filter(staff_number__isnull=False).order_by('-password_updated_at').first()
+        if recent_one is None:
+            return -1
+        else:
+            return recent_one.password_updated_at.timestamp()
+
+    # wait for password updated
+    start = time.time()
+    while time.time() - start < 30:
+        if abs(latest_password_update() - float(request.POST.get('latest_password_update'))) > .01:
+            break
+        time.sleep(1)
+
+    staffs = Employee.objects.filter(staff_number__isnull=False).order_by('staff_number')
+    data = {
+        'users': [
+            {
+                'staff_number': staff.staff_number,
+                'username': staff.user.username,
+                'shadow_password': staff.shadow_password,
+                'nt_password_hash': staff.nt_password_hash,
+                'password_updated_at': staff.password_updated_at.timestamp(),
+            } for staff in staffs
+        ],
+        'from_ip': get_ip(request),
+    }
+    return JsonResponse(data, json_dumps_params={'sort_keys': True})
+
 @check_access
 def resetpassword(request):
     if request.method == 'POST':
@@ -306,7 +356,7 @@ def resetpassword(request):
             else:
                 with transaction.atomic():
                     exists = User.objects.filter(username=username).exclude(id=request.user.id).select_for_update().exists()
-                    if len(username) < 4 and request.user.username != username:
+                    if len(username) < 2 and request.user.username != username:
                         form.add_error('username', 'username too short')
                     elif len(username) > 40 and request.user.username != username:
                         form.add_error('username', 'username too long')
@@ -321,6 +371,9 @@ def resetpassword(request):
                                 form.add_error('password', msg)
                         else:
                             request.user.set_password(password)
+                            request.user.employee.shadow_password = crypt.crypt(password, crypt.mksalt())
+                            request.user.employee.nt_password_hash = md4.MD4(password.encode('utf-16-le')).hexdigest().upper()
+                            request.user.employee.password_updated_at = timezone.now()
                             request.user.employee.save()
                             request.user.save()
                             if request.user.username == username:
