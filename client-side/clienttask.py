@@ -23,7 +23,7 @@ def get_utilization_rates(handle):
         return dict(
             gpu=pynvml.nvmlDeviceGetUtilizationRates(handle).gpu,
             memory=pynvml.nvmlDeviceGetUtilizationRates(handle).memory,
-        ),
+        )
     except pynvml.NVMLError_Unknown:
         return dict(
             gpu=None,
