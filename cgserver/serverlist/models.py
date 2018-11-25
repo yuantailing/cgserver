@@ -12,7 +12,7 @@ class AccessLog(models.Model):
     target = models.CharField(max_length=64, db_index=True, default=None)
     param = models.CharField(max_length=64, blank=True, default='')
     info = models.TextField(blank=True, default='')
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
 
 
 class Client(models.Model):
@@ -33,7 +33,7 @@ class ClientReport(models.Model):
     ip = models.CharField(max_length=64, db_index=True, default=None)
     version = models.CharField(max_length=64, db_index=True, default=None)
     report = models.TextField(default=None)
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
     updated_at = models.DateTimeField(auto_now=True)
 
 

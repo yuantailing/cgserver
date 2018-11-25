@@ -12,6 +12,7 @@ import uuid
 
 from .forms import ResetPasswordForm
 from .models import AccessLog, Client, ClientReport, Employee, GithubUser, UnknownReport
+from datetime import datetime, timedelta
 from django.conf import settings
 from django.contrib import auth
 from django.contrib.auth import authenticate
@@ -81,7 +82,7 @@ def index(request):
                     '最高主频 {:.1f}GHz'.format(report['cpu_freq'][2] / 1000),
                 ])
             tr.append('N/A' if report['loadavg'] is None else '{:.1f}'.format(report['loadavg'][0]))
-            tr.append('{:.1f}G ({:.0f}%)'.format(report['virtual_memory'][0] / 1024 ** 3, report['virtual_memory'][2], 0))
+            tr.append('{:.1f}G ({:.0f}%)'.format(report['virtual_memory'][0] / 1024 ** 3, report['virtual_memory'][2]))
             tr.append(['{:.0f}G ({:.0f}%)'.format(disk[0] / 1024**3, disk[3]) for disk in report['disk_usage'] if disk[0] / 1024**3 > 9])
             if report['nvml_version']:
                 tr.append([dev['nvmlDeviceGetName'] for dev in report['nvmlDevices']])
@@ -134,6 +135,28 @@ def client(request, pk):
     client_reports = paginator.get_page(request.GET.get('page'))
     AccessLog.objects.create(user=request.user, ip=get_ip(request), target='serverlist:client', param=pk)
     return render(request, 'serverlist/client.html', {'client': client, 'client_reports': client_reports})
+
+@check_access
+def clientchart(request, pk):
+    client = get_object_or_404(Client.objects, pk=pk)
+    client_reports = ClientReport.objects.filter(client=client).filter(created_at__gt=datetime.now() - timedelta(days=14)).order_by('-created_at')
+    data = []
+    for report in client_reports:
+        day = (report.created_at.timestamp() - timezone.now().timestamp()) / 86400.
+        report = json.loads(report.report)
+        data.append({
+            'day': day,
+            'cpu': report['cpu_percent'],
+            'virtual_memory': report['virtual_memory'][2],
+            'gpu': [{
+                'name': dev['nvmlDeviceGetName'],
+                'util': dev['nvmlDeviceGetUtilizationRates']['gpu'],
+                'memory': dev['nvmlDeviceGetMemoryInfo']['used'] / dev['nvmlDeviceGetMemoryInfo']['total'] * 100,
+                'temperature': dev.get('nvmlDeviceGetTemperature', None),
+            } for dev in report.get('nvmlDevices', [])],
+        })
+    AccessLog.objects.create(user=request.user, ip=get_ip(request), target='serverlist:clientchart', param=pk)
+    return render(request, 'serverlist/clientchart.html', {'client': client, 'data': json.dumps(data)})
 
 @check_access
 def clientreport(request, client_id, report_id):

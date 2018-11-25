@@ -45,7 +45,7 @@
   nfs 无法做用户身份验证，安全起见，所有用户都映射为 <code>nobody:nogroup</code>，只可读。如需开一个公共可写文件夹，可以 chmod 777（不推荐）<br>
   方法一、通过 fstab 挂载：往 /etc/fstab 加一行 <code>nas.thucg.com:/nas	/path/to/mount	nfs	rsize=8192,wsize=8192,intr	0	0</code>，然后 <code># mount /path/to/mount</code><br>
   方法二、直接挂载：<code># mount -tnfs -orsize=8192 -owsize=8192 -ointr nas.thucg.com:/nas /path/to/mount</code><br>
-  卸载命令：<code># umount /path/to/mount</code>
+  卸载命令：<code># umount /path/to/mount</code><br>
   挂载时建议加 intr 选项，以免网络断开后无法 umount<br>
 </p>
 
@@ -53,7 +53,7 @@
 <p>
 	Q: 保存哪些目录？<br>
 	A: 只保证 <code>/nas</code> 下的文件会保存，其它目录（例如 <code>/tmp</code>）会在服务重启时重置<br>
-	A: 如果你的 home 目录超过 2 TB，或者文件数量超过 2,000,000 个，我们可能会要求你清理
+	A: 如果你的 home 目录超过 4 TB，或者文件数量超过 10,000,000 个，我们可能会要求你清理
 </p>
 <p>
 	Q: 密码错误<br>
@@ -81,6 +81,6 @@
 </p>
 <p>
 	Q: 数据备份<br>
-	A: 目前没有数据备份机制，文件系统安全性由 Linux 权限机制保证，硬件安全性由冗余磁盘阵列（RAID5）提供，泄漏帐号导致的数据丢失无法恢复<br>
+	A: 目前没有数据备份机制，文件系统安全性由 Linux 权限机制保证，硬件安全性由冗余磁盘阵列（RAID）提供，泄漏帐号导致的数据丢失无法恢复<br>
 </p>
 {% endblock %}
