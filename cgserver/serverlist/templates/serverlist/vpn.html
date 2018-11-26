@@ -4,7 +4,7 @@
 {% block content %}
 <h1>Welcome to OpenVPN</h1>
 <p>Configuration file can be downloaded <a href="{% static 'serverlist/cscg.ovpn' %}">here</a>.</p>
-<p>OpenVPN software can be downloaded <a href="https://openvpn.net/index.php/open-source/downloads.html">here</a>.</p>
+<p>OpenVPN software can be downloaded <a href="https://openvpn.net/community-downloads/">here</a>.</p>
 <p>Mirror download (Installer, Windows 7 and later): <a href="http://open-access.oss-cn-beijing.aliyuncs.com/Downloads/openvpn-install-2.4.6-I602.exe">openvpn-install-2.4.6-I602.exe</a></p>
 <p><b>Username:</b> <span>{{ user.username }}</span> | <a href="{% url 'serverlist:resetpassword' %}">change username</a></p>
 <p><b>Password:</b> *** (don't use GitHub password) | <a href="{% url 'serverlist:resetpassword' %}">reset password</a></p>
@@ -21,20 +21,24 @@
 <p>
 	Q: Linux 如何配置 OpenVPN<br>
 	A: 两种方案，推荐后一种，以服务模式运行，避免多开一个 terminal，其它用户也可重启该服务<br>
-	A1: 1) 安装 openvpn，2) 下载配置文件 cscg.ovpn，3) 运行 <code>$ sudo openvpn cscg.ovpn</code><br>
-	A2: 1) 安装 openvpn，2) 配置文件下载到 <i>/etc/openvpn/cscg.conf</i>（注意后缀），3) 运行 <code>$ sudo systemctl restart openvpn@cscg</code>（或 <code>$ sudo service openvpn@cscg restart</code>）。旧版本 openvpn 不要加 <code>@cscg</code>
+	A1: 1) 安装 openvpn，2) 下载配置文件 <a href="{% static 'serverlist/cscg.ovpn' %}">cscg.ovpn</a>，3) 运行 <code>$ sudo openvpn cscg.ovpn</code><br>
+	A2: 1) 安装 openvpn，2) 下载配置文件到指定路径 <code>sudo curl -sSL <script>document.write(window.location.origin);</script>{% static 'serverlist/cscg.ovpn' %} -o/etc/openvpn/cscg.conf</code>，3) 运行 <code>$ sudo service openvpn@cscg restart</code>（或 <code>$ sudo systemctl restart openvpn@cscg</code>），有的版本不要加 <code>@cscg</code>
 </p>
 <p>
 	Q: net.tsinghua.edu.cn 仍看到自己的帐号<br>
-	A: 校内流量不走 VPN，看到自己的帐号属于正常现象。检查流量是否走 VPN 的方法是打开 <a href="http://ip.cn">ip.cn</a> 或在百度上搜 <a href="https://www.baidu.com/s?wd=IP">IP</a>，Linux 检查方式 <code>$ curl ip.cn</code> 或 <code>$ curl ifconfig.co</code>
+	A: 校内流量不走 VPN，看到自己的帐号属于正常现象。检查流量是否走 VPN 的方法是打开 <a href="http://ifconfig.co">ifconfig.co</a>、<a href="http://ip.cn">ip.cn</a> 或在百度上搜 <a href="https://www.baidu.com/s?wd=IP">IP</a>，命令行检查方式 <code>$ curl -4 ifconfig.co</code> 或 <code>$ curl -4 ip.cn</code>
 </p>
 <p>
 	Q: 免输密码（Windows OpenVPN 2.4 以上可以保存密码，无需此操作）<br>
 	A: 配置文件中 <code>auth-user-pass</code> 这行改为 <code>auth-user-pass account.txt</code>，新建 account.txt（与 cscg.ovpn 同目录），第一行填用户名，第二行填密码
 </p>
 <p>
-	Q: 在校外，使用 VPN 访问校内资源（如 info 等）<br>
+	Q: 我在校外，想使用 VPN 访问校内资源（如 info 等）<br>
 	A: 配置文件中 <code>route 166.111.0.0 255.255.0.0 net_gateway</code> 中的 net_gateway 改为 vpn_gateway 即可。59.66 网段同理
+</p>
+<p>
+	Q: 我的网络环境比较复杂，使用了 TCP 代理，使用 UDP 协议连不上 OpenVPN<br>
+	A: 我们还开了 TCP 协议的 OpenVPN 服务，可以把配置文件 <code>proto udp</code> 这行改成 <code>proto tcp</code> 再试
 </p>
 <p>
 	Q: OpenVPN 与 PPTP 相比，有什么优缺点<br>

@@ -31,6 +31,6 @@
 </p>
 <p>
 	Q: 上得了主页但连不上 PPTP / L2TP<br>
-	A: PPTP / L2TP 无法穿透某些 NAT，因此如果你没有 IPv4 公网 IP 地址，或者运营商限制了你能绑定的端口（例如手机网络），则有可能连不上
+	A: PPTP / L2TP 无法穿透某些 NAT 和防火墙，此时 <a href="{% url 'serverlist:vpn' %}">OpenVPN</a> 有希望连上
 </p>
 {% endblock %}

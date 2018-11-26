@@ -30,6 +30,4 @@ cp settings.py.sample settings.py
 
 Add *report.py* to crontab, for example:
 
-> */15 * * * * nobody python3 /path/to/client-side/report.py
-
-## Todo
+> */15 *	* * *	nobody	cd /path/to/cgserver/client-side && /usr/bin/python3 report.py
