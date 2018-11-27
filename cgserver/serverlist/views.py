@@ -235,22 +235,9 @@ def nas(request):
     return render(request, 'serverlist/nas.html', {'password_set': password_set, 'uid': uid, 'home': home})
 
 @check_access
-def ftp(request):
-    passwords = dict(
-        FTP_TMP_PASSWORD=settings.FTP_TMP_PASSWORD,
-    )
-    AccessLog.objects.create(user=request.user, ip=get_ip(request), target='serverlist:ftp')
-    return render(request, 'serverlist/ftp.html', passwords)
-
-@check_access
 def download(request):
     AccessLog.objects.create(user=request.user, ip=get_ip(request), target='serverlist:download')
     return render(request, 'serverlist/download.html')
-
-@check_access
-def proxy(request):
-    AccessLog.objects.create(user=request.user, ip=get_ip(request), target='serverlist:proxy')
-    return render(request, 'serverlist/proxy.html')
 
 def login(request):
     return redirect('https://github.com/login/oauth/authorize?client_id={:s}'.format(settings.GITHUB_CLIENT_ID))
