@@ -5,7 +5,7 @@ import json
 from six.moves import urllib
 
 if __name__ == '__main__':
-    url = 'https://server.thucg.com/serverlist/clientreport'
+    url = settings.REPORT_URL
     report = clienttask.alltasks()
     data = dict(
         client_id=settings.CLIENT_ID,
@@ -17,4 +17,3 @@ if __name__ == '__main__':
     content = request.read().decode('utf-8')
     content = json.loads(content)
     print(content)
-
