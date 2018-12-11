@@ -296,17 +296,38 @@ def vpnauth(request):
     username = request.POST.get('username')
     password = request.POST.get('password')
     client_secret = request.POST.get('client_secret')
+    ip = request.POST.get('untrusted_ip', '')
     if client_secret != settings.VPN_CLIENT_SECRET:
-        return HttpResponseBadRequest('client secret error')
-    user = User.objects.filter(username=username).first()
-    if not user:
-        return JsonResponse({'error': 1, 'msg': 'no such user'}, json_dumps_params={'sort_keys': True})
-    if not user.check_password(password):
-        return JsonResponse({'error': 2, 'msg': 'password error'}, json_dumps_params={'sort_keys': True})
-    AccessLog.objects.create(user=user, ip=request.POST.get('untrusted_ip') or '', target='serverlist:vpnauth')
-    if not hasattr(user, 'employee') or not user.employee.can_access:
-        return JsonResponse({'error': 3, 'msg': 'no access'}, json_dumps_params={'sort_keys': True})
-    return JsonResponse({'error': 0, 'msg': 'ok'}, json_dumps_params={'sort_keys': True})
+        return HttpResponseBadRequest('vpn client secret error')
+    def try_client():
+        client = Client.objects.filter(client_id=username).first()
+        if not client:
+            return {'error': 1, 'msg': 'no such client'}, None, None
+        if password != client.client_secret:
+            return {'error': 1, 'msg': 'client secret error'}, None, None
+        report = client.clientreport_set.filter(ip=ip, created_at__gt=datetime.now() - timedelta(hours=1)).order_by('-created_at').first()
+        if not report:
+            return {'error': 2, 'msg': 'client ip error'}, client, 'error'
+        return {'error': 0, 'msg': 'ok'}, client, 'success'
+    def try_user():
+        user = User.objects.filter(username=username).first()
+        if not user:
+            return {'error': 1, 'msg': 'no such user'}, None, None
+        if not user.check_password(password):
+            return {'error': 2, 'msg': 'password error'}, None, None
+        if not hasattr(user, 'employee') or not user.employee.can_access:
+            return {'error': 3, 'msg': 'no access'}, user, 'error'
+        return {'error': 0, 'msg': 'ok'}, user, 'success'
+    res, client, param = try_client()
+    if client:
+        AccessLog.objects.create(client=client, ip=ip, target='serverlist:vpnauth', param=param)
+    if res['error']:
+        res, user, param = try_user()
+        if user:
+            AccessLog.objects.create(user=user, ip=ip, target='serverlist:vpnauth', param=param)
+        return JsonResponse(res, json_dumps_params={'sort_keys': True})
+    else:
+        return JsonResponse(res, json_dumps_params={'sort_keys': True})
 
 @csrf_exempt
 def cgnas_api(request):

@@ -6,15 +6,6 @@ from django.db import models
 
 # Create your models here.
 
-class AccessLog(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    ip = models.CharField(max_length=64, db_index=True, default=None)
-    target = models.CharField(max_length=64, db_index=True, default=None)
-    param = models.CharField(max_length=64, blank=True, default='')
-    info = models.TextField(blank=True, default='')
-    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
-
-
 class Client(models.Model):
     client_id = models.CharField(max_length=64, db_index=True, unique=True, default=None)
     client_secret = models.CharField(max_length=64, default=None)
@@ -35,6 +26,16 @@ class ClientReport(models.Model):
     report = models.TextField(default=None)
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+
+class AccessLog(models.Model):
+    user = models.ForeignKey(User, null=True, on_delete=models.CASCADE)
+    client = models.ForeignKey(Client, null=True, on_delete=models.CASCADE)
+    ip = models.CharField(max_length=64, db_index=True, default=None)
+    target = models.CharField(max_length=64, db_index=True, default=None)
+    param = models.CharField(max_length=64, blank=True, default='')
+    info = models.TextField(blank=True, default='')
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
 
 
 class Employee(models.Model):
