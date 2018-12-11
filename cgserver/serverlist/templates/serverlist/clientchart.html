@@ -32,68 +32,70 @@
 <div id="charts" style="width: 900px;"></div>
 
 <script>
-var data = {{ data|safe }};
-var gpu_colors = [
-	'#83f',
-	'#380',
-	'#e30',
-	'#07e',
-];
-var gpu_null = {memory: null, util: null, temperature: null};
+(function (data) {
+	var gpu_colors = [
+		'#83f',
+		'#380',
+		'#e30',
+		'#07e',
+	];
+	var gpu_null = {memory: null, util: null, temperature: null};
 
-if (data.length > 0) {
-	[
-		{datasets: [{label: 'CPU (%)', getter: function (o) { return o.cpu; }, color: '#e30'}], 'ymax': 100, 'ystep': 20},
-		{datasets: [{label: 'RAM (%)', getter: function (o) { return o.virtual_memory; }, color: '#e06'}], 'ymax': 100, 'ystep': 20},
-		{datasets: data[0].gpu.map(function (_, i) { return {label: 'GPU' + i + ' util (%)',    getter: function (o) { return (o.gpu[i] || gpu_null).util;        }, color: gpu_colors[i % gpu_colors.length]}; }), 'ymax': 100, 'ystep': 20},
-		{datasets: data[0].gpu.map(function (_, i) { return {label: 'GPU' + i + ' memory (%)',  getter: function (o) { return (o.gpu[i] || gpu_null).memory;      }, color: gpu_colors[i % gpu_colors.length]}; }), 'ymax': 100, 'ystep': 20},
-		{datasets: data[0].gpu.map(function (_, i) { return {label: 'GPU' + i + ' temperature', getter: function (o) { return (o.gpu[i] || gpu_null).temperature; }, color: gpu_colors[i % gpu_colors.length]}; }), 'ymax': 100, 'ystep': 20},
-	].forEach(function (chart) {
-		var canvas = document.createElement('canvas');
-		canvas.width = 900;
-		canvas.height = 200;
-		document.getElementById('charts').appendChild(canvas);
-		var ctx = canvas.getContext('2d');
-		new Chart(ctx, {
-			type: 'scatter',
-			data: {
-				datasets: chart.datasets.map(function (dataset) {
-					return {
-						showLine: true,
-						label: dataset.label,
-						data: data.map(function (o) {
-							return {
-								x: o.day,
-								y: dataset.getter(o),
-							};
-						}),
-						borderWidth: 2,
-						borderColor: dataset.color,
-						backgroundColor: 'transparent',
-						pointRadius: 0,
-					};
-				}),
-			},
-			options: {
-				scales: {
-					xAxes: [{
-						ticks: {
-							min: -14,
-							max: 0,
-							stepSize: 1,
-						},
-					}],
-					yAxes: [{
-						ticks: {
-							min: 0,
-							max: chart.ymax,
-							stepSize: chart.ystep,
-						},
-					}],
+	if (data.length > 0) {
+		[
+			{datasets: [{label: 'CPU (%)', getter: function (o) { return o.cpu; }, color: '#e30'}], 'ymax': 100, 'ystep': 20},
+			{datasets: [{label: 'RAM (%)', getter: function (o) { return o.virtual_memory; }, color: '#e06'}], 'ymax': 100, 'ystep': 20},
+			{datasets: data[0].gpu.map(function (_, i) { return {label: 'GPU' + i + ' util (%)',    getter: function (o) { return (o.gpu[i] || gpu_null).util;        }, color: gpu_colors[i % gpu_colors.length]}; }), 'ymax': 100, 'ystep': 20},
+			{datasets: data[0].gpu.map(function (_, i) { return {label: 'GPU' + i + ' memory (%)',  getter: function (o) { return (o.gpu[i] || gpu_null).memory;      }, color: gpu_colors[i % gpu_colors.length]}; }), 'ymax': 100, 'ystep': 20},
+			{datasets: data[0].gpu.map(function (_, i) { return {label: 'GPU' + i + ' temperature', getter: function (o) { return (o.gpu[i] || gpu_null).temperature; }, color: gpu_colors[i % gpu_colors.length]}; }), 'ymax': 100, 'ystep': 20},
+		].forEach(function (chart) {
+			var canvas = document.createElement('canvas');
+			canvas.width = 900;
+			canvas.height = 200;
+			document.getElementById('charts').appendChild(canvas);
+			var ctx = canvas.getContext('2d');
+			new Chart(ctx, {
+				type: 'scatter',
+				data: {
+					datasets: chart.datasets.map(function (dataset) {
+						return {
+							showLine: true,
+							lineTension: .1,
+							label: dataset.label,
+							data: data.map(function (o) {
+								return {
+									x: o.day,
+									y: dataset.getter(o),
+								};
+							}),
+							borderWidth: 2,
+							borderColor: dataset.color,
+							backgroundColor: 'transparent',
+							pointRadius: 0,
+						};
+					}),
 				},
-			},
+				options: {
+					scales: {
+						xAxes: [{
+							ticks: {
+								min: -14,
+								max: 0,
+								stepSize: 1,
+							},
+						}],
+						yAxes: [{
+							ticks: {
+								min: 0,
+								max: chart.ymax,
+								stepSize: chart.ystep,
+							},
+						}],
+					},
+				},
+			});
 		});
-	});
-}
+	}
+})({{ data|safe }});
 </script>
 {% endblock %}

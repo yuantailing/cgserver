@@ -8,6 +8,7 @@ cscg server list
 ```shell
 pip3 install -r requirements.txt
 cp cgserver/settings.py.sample cgserver/settings.py
+chmod 600 cgserver/settings.py
 cp serverlist/scripts/add_clients.py.sample serverlist/scripts/add_clients.py
 ```
 

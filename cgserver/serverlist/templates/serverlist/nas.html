@@ -43,6 +43,7 @@
 <h3>4. nfs</h3>
 <p>
   nfs 无法做用户身份验证，安全起见，所有用户都映射为 <code>nobody:nogroup</code>，只可读。如需开一个公共可写文件夹，可以 chmod 777（不推荐）<br>
+  先安装 <code># apt install nfs-common</code><br>
   方法一、通过 fstab 挂载：往 /etc/fstab 加一行 <code>nas.thucg.com:/nas	/path/to/mount	nfs	rsize=8192,wsize=8192,intr	0	0</code>，然后 <code># mount /path/to/mount</code><br>
   方法二、直接挂载：<code># mount -tnfs -orsize=8192 -owsize=8192 -ointr nas.thucg.com:/nas /path/to/mount</code><br>
   卸载命令：<code># umount /path/to/mount</code><br>
@@ -68,11 +69,6 @@
 <p>
 	Q: 连了外网吗？<br>
 	A: 服务器已通过 OpenVPN 连接到 6830，可以上网。因此你可以直接在 nas 服务器上下载数据，也可以在 ssh 里执行其它命令
-</p>
-<p>
-	Q: 端口开放吗？<br>
-	A: 公网端口不开放。本服务运行在 docker 里，并且只映射了几个必要的端口，用户没法打开公网 IP 的任何端口<br>
-	A: 内网端口开放。所有端口可以在 OpenVPN 的内网里访问，可以用 ifconfig 查看 tun0 的 IP（一般为 10.*.*.*）
 </p>
 <p>
 	Q: 校外如何访问？<br>

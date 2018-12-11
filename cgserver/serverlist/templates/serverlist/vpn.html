@@ -21,12 +21,12 @@
 <p>
 	Q: Linux 如何配置 OpenVPN<br>
 	A: 两种方案，推荐后一种，以服务模式运行，避免多开一个 terminal，其它用户也可重启该服务<br>
-	A1: 1) 安装 openvpn，2) 下载配置文件 <a href="{% static 'serverlist/cscg.ovpn' %}">cscg.ovpn</a>，3) 运行 <code>$ sudo openvpn cscg.ovpn</code><br>
-	A2: 1) 安装 openvpn，2) 下载配置文件到指定路径 <code>$ sudo curl <script>document.write(window.location.origin);</script>{% static 'serverlist/cscg.ovpn' %} -Lo/etc/openvpn/cscg.conf</code>，3) 运行 <code>$ sudo service openvpn@cscg restart</code>（或 <code>$ sudo systemctl restart openvpn@cscg</code>），有的版本不要加 <code>@cscg</code>
+	A1: 1) 安装 <code>$ sudo apt install openvpn</code>，2) 下载配置文件 <a href="{% static 'serverlist/cscg.ovpn' %}">cscg.ovpn</a>，3) 运行 <code>$ sudo openvpn cscg.ovpn</code><br>
+	A2: 1) 安装 <code>$ sudo apt install openvpn</code>，2) 下载配置文件到指定路径 <code>$ sudo curl <script>document.write(window.location.origin);</script>{% static 'serverlist/cscg.ovpn' %} -Lo/etc/openvpn/cscg.conf</code>，3) 运行 <code>$ sudo service openvpn@cscg restart</code>（或 <code>$ sudo systemctl restart openvpn@cscg</code>），有的版本不要加 <code>@cscg</code>
 </p>
 <p>
 	Q: net.tsinghua.edu.cn 仍看到自己的帐号<br>
-	A: 校内流量不走 VPN，看到自己的帐号属于正常现象。检查流量是否走 VPN 的方法是打开 <a href="http://ifconfig.co">ifconfig.co</a>、<a href="http://ip.cn">ip.cn</a> 或在百度上搜 <a href="https://www.baidu.com/s?wd=IP">IP</a>，命令行检查方式 <code>$ curl -4 ifconfig.co</code> 或 <code>$ curl -4 ip.cn</code>
+	A: 校内流量不走 VPN，看到自己的帐号属于正常现象。检查流量是否走 VPN 的方法是打开 <a href="http://ifconfig.co">ifconfig.co</a>、<a href="http://ip.cn">ip.cn</a> 或在百度上搜 <a href="https://www.baidu.com/s?wd=IP">IP</a>，命令行检查方式 <code>$ curl -4 ifconfig.co</code>
 </p>
 <p>
 	Q: 免输密码（Windows OpenVPN 2.4 以上可以保存密码，无需此操作）<br>
