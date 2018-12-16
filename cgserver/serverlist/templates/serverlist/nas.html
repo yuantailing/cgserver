@@ -63,6 +63,7 @@
 </p>
 <p>
 	Q: 安全须知<br>
+	A: home 目录的默认权限是 <code>rwx------</code>，仅自己可读。若要其它登录用户可读 <code>$ chmod 750 {{ home }}</code>，若要 NFS mount 公开可读 <code>$ chmod 755 {{ home }}</code><br>
 	A: 建议不要在自己的 home 目录授予其它用户写权限，否则其它用户和来自网络的匿名用户可以修改你的数据<br>
 	A: FTP 协议会明文传输密码，如果使用了 FTP 协议，则极有可能泄漏密码，请尽量避免使用 FTP 协议
 </p>
