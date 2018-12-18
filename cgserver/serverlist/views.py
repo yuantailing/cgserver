@@ -83,7 +83,10 @@ def index(request):
                 ])
             tr.append('N/A' if report['loadavg'] is None else '{:.1f}'.format(report['loadavg'][0]))
             tr.append('{:.1f}G ({:.0f}%)'.format(report['virtual_memory'][0] / 1024 ** 3, report['virtual_memory'][2]))
-            tr.append(['{:.0f}G ({:.0f}%)'.format(disk[0] / 1024**3, disk[3]) for disk in report['disk_usage'] if disk[0] / 1024**3 > 9])
+            disks = list(zip(report['disk_partitions'], report['disk_usage']))
+            disks.sort(key=lambda a: (a[0][0], -a[1][0]))
+            disks = [usage for i, (partition, usage) in enumerate(disks) if partition[0] not in set(p[0] for p, _ in disks[:i])]
+            tr.append(['{:.0f}G ({:.0f}%)'.format(disk[0] / 1024**3, disk[3]) for disk in disks if disk[0] / 1024**3 > 9])
             if report['nvml_version']:
                 tr.append([dev['nvmlDeviceGetName'] for dev in report['nvmlDevices']])
                 tr.append(['{:.1f}G ({:.0f}%)'.format(
