@@ -438,5 +438,7 @@ def resetpassword(request):
         return render(request, 'serverlist/resetpassword.html', {'form': form, 'error': []})
 
 def logout(request):
+    if request.method != 'POST':
+        return HttpResponseBadRequest('malformed request')
     auth.logout(request)
     return redirect(reverse('serverlist:permissiondenied'))

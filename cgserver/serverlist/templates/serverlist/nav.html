@@ -6,6 +6,9 @@
 		<a href="{% url 'serverlist:login' %}">login</a>
 	</p>
 	{% else %}
+	<form action="{% url 'serverlist:logout' %}" method="post" style="display: none;" id="nav-form-logout">
+		{% csrf_token %}
+	</form>
 	<p>
 		<a href="{% url 'serverlist:index' %}">&lt;&lt; back to home</a> |
 		<a href="{% url 'serverlist:vpn' %}">openvpn</a> |
@@ -13,7 +16,7 @@
 		<a href="{% url 'serverlist:nas' %}">nas</a> |
 		<a href="{% url 'serverlist:download' %}">download</a> |
 		<a href="{% url 'serverlist:permissiondenied' %}">{{ user.username }}</a> |
-		<a href="{% url 'serverlist:logout' %}">logout</a>
+		<a href="#" onclick="document.getElementById('nav-form-logout').submit()">logout</a>
 	</p>
 	{% endif %}
 </div>
