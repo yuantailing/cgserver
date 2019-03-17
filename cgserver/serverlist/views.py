@@ -249,25 +249,31 @@ def githubcallback(request):
     code = request.GET.get('code')
     if not code:
         return HttpResponseBadRequest('no verification code')
-    res = requests.post(
-        'https://github.com/login/oauth/access_token',
-        data=urllib.parse.urlencode({
-            'client_id': settings.GITHUB_CLIENT_ID,
-            'client_secret': settings.GITHUB_CLIENT_SECRET,
-            'code': code,
-        }).encode(),
-        headers={'Accept': 'application/json'},
-    )
-    if not res.ok:
-        return HttpResponseBadRequest('bad verification code')
+    try:
+        res = requests.post(
+            'https://github.com/login/oauth/access_token',
+            data=urllib.parse.urlencode({
+                'client_id': settings.GITHUB_CLIENT_ID,
+                'client_secret': settings.GITHUB_CLIENT_SECRET,
+                'code': code,
+            }).encode(),
+            headers={'Accept': 'application/json'},
+        )
+        res.raise_for_status()
+    except requests.exceptions.RequestException:
+        return HttpResponseBadRequest('failed to call GitHub API')
     res = res.json()
     if not res.get('access_token'):
         return HttpResponseBadRequest('bad verification code')
     access_token = res['access_token']
-    guser = requests.get(
-        'https://api.github.com/user',
-        headers={'Authorization': 'token {:s}'.format(access_token)}
-    )
+    try:
+        guser = requests.get(
+            'https://api.github.com/user',
+            headers={'Authorization': 'token {:s}'.format(access_token)}
+        )
+        guser.raise_for_status()
+    except requests.exceptions.RequestException:
+        return HttpResponseBadRequest('failed to call GitHub API')
     guser = guser.json()
     github_user = GithubUser.objects.filter(github_id=guser['id']).first()
     with transaction.atomic():
@@ -282,15 +288,20 @@ def githubcallback(request):
             github_user.github_login = guser['login']
             github_user.github_email = guser['email'] or ''
             github_user.save()
-    access_by_org = requests.get(
-        'https://api.github.com/orgs/cscg-group/members/{:s}'.format(guser['login']),
-        headers={'Authorization': 'token {:s}'.format(settings.GITHUB_PERSONAL_ACCESS_TOKEN)}
-    )
-    access_by_org = access_by_org.status_code == 204
-    if access_by_org:
-        employee, created = Employee.objects.get_or_create(user=user)
-        employee.can_access = True
-        employee.save()
+    if not hasattr(user, 'employee') or not user.employee.can_access:
+        try:
+            access_by_org = requests.get(
+                'https://api.github.com/orgs/cscg-group/members/{:s}'.format(guser['login']),
+                headers={'Authorization': 'token {:s}'.format(settings.GITHUB_PERSONAL_ACCESS_TOKEN)}
+            )
+        except requests.exceptions.RequestException:
+            return HttpResponseBadRequest('failed to call GitHub API')
+        access_by_org = access_by_org.status_code == 204
+        if access_by_org:
+            employee, created = Employee.objects.get_or_create(user=user)
+            employee.can_access = True
+            employee.save()
+    AccessLog.objects.create(user=user, ip=get_ip(request), target='serverlist:githubcallback')
     auth.login(request, user)
     return redirect(reverse('serverlist:index'))
 
