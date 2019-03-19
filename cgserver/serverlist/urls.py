@@ -5,7 +5,7 @@ from . import views
 app_name = 'serverlist'
 
 urlpatterns = [
-    path('checkpermission', views.permissiondenied, name='permissiondenied'),
+    path('checkpermission', views.checkpermission, name='checkpermission'),
     path('', views.index, name='index'),
     path('client/<int:pk>', views.client, name='client'),
     path('client/<int:pk>/chart', views.clientchart, name='clientchart'),

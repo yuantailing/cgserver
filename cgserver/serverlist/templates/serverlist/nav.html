@@ -15,7 +15,7 @@
 		<a href="{% url 'serverlist:pptp' %}">pptp/l2tp</a> |
 		<a href="{% url 'serverlist:nas' %}">nas</a> |
 		<a href="{% url 'serverlist:download' %}">download</a> |
-		<a href="{% url 'serverlist:permissiondenied' %}">{{ user.username }}</a> |
+		<a href="{% url 'serverlist:checkpermission' %}">{{ user.username }}</a> |
 		<a href="#" onclick="document.getElementById('nav-form-logout').submit()">logout</a>
 	</p>
 	{% endif %}

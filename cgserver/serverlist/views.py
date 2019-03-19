@@ -42,19 +42,19 @@ def check_access(func):
     @functools.wraps(func)
     def _decorator(request, *args, **kwargs):
         if request.user.is_anonymous:
-            return redirect(reverse('serverlist:permissiondenied'))
+            return redirect(reverse('serverlist:checkpermission'))
         if not hasattr(request.user, 'employee'):
             Employee.objects.create(user=request.user)
         if not request.user.employee.can_access:
-            return redirect(reverse('serverlist:permissiondenied'))
+            return redirect(reverse('serverlist:checkpermission'))
         if not request.user.employee.staff_number:
             request.user.employee.staff_number = 1 + (Employee.objects.all().aggregate(Max('staff_number'))['staff_number__max'] or 0)
             request.user.employee.save()
         return func(request, *args, **kwargs)
     return _decorator
 
-def permissiondenied(request):
-    return render(request, 'serverlist/permissiondenied.html', {'GITHUB_CLIENT_ID': settings.GITHUB_CLIENT_ID})
+def checkpermission(request):
+    return render(request, 'serverlist/checkpermission.html', {'GITHUB_CLIENT_ID': settings.GITHUB_CLIENT_ID})
 
 @check_access
 def index(request):
@@ -291,7 +291,7 @@ def githubcallback(request):
     if not hasattr(user, 'employee') or not user.employee.can_access:
         try:
             access_by_org = requests.get(
-                'https://api.github.com/orgs/cscg-group/members/{:s}'.format(guser['login']),
+                'https://api.github.com/orgs/thucg/members/{:s}'.format(guser['login']),
                 headers={'Authorization': 'token {:s}'.format(settings.GITHUB_PERSONAL_ACCESS_TOKEN)}
             )
         except requests.exceptions.RequestException:
@@ -441,4 +441,4 @@ def logout(request):
     if request.method != 'POST':
         return HttpResponseBadRequest('malformed request')
     auth.logout(request)
-    return redirect(reverse('serverlist:permissiondenied'))
+    return redirect(reverse('serverlist:checkpermission'))
