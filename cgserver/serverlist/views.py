@@ -232,7 +232,7 @@ def pptp(request):
 @check_access
 def nas(request):
     uid = '{:d}'.format(request.user.employee.staff_number + 10000)
-    home = '/nas/{:s}'.format(uid)
+    home = '/nas/raid/{:s}'.format(uid)
     password_set = 0 < len(request.user.employee.shadow_password) and 0 < len(request.user.employee.nt_password_hash)
     AccessLog.objects.create(user=request.user, ip=get_ip(request), target='serverlist:nas')
     return render(request, 'serverlist/nas.html', {'password_set': password_set, 'uid': uid, 'home': home})

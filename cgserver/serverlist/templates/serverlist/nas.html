@@ -7,23 +7,32 @@
 <p><b>Username:</b> <span>{{ user.username }}</span> | <a href="{% url 'serverlist:resetpassword' %}">change username</a></p>
 {% if password_set %}
 <p><b>Password:</b> *** (don't use GitHub password) | <a href="{% url 'serverlist:resetpassword' %}">reset password</a></p>
-<p><b>Password updated at:</b> {{ user.employee.password_updated_at | date:'Y-m-d H:i:s' }} | password expires every 90 days.</p>
+<p><b>Password updated at:</b> {{ user.employee.password_updated_at | date:'Y-m-d H:i:s' }}</p>
 {% else %}
 <p><b>Password:</b> <i style="color: red">has not been set</i> | <a href="{% url 'serverlist:resetpassword' %}">reset password</a></p>
 {% endif %}
 <p><b>UID:</b> {{ uid }}</p>
-<p><b>Home:</b> {{ home }} <span style="font-weight: bold;">or</span> /home/{{ user.username }} <i>(a symbolic link to {{ home }})</i></p>
+<p>
+	<b>Your directories:</b>
+	<br>
+	<ul>
+		<li>/nas/raid/{{ uid }} (<b>your home</b>, RAID6) 存放存档数据</li>
+		<li>/nas/disk-0/{{ uid }} (non-RAID) 暂时存放高频读写数据</li>
+		<li>/nas/disk-1/{{ uid }} (non-RAID) 暂时存放高频读写数据</li>
+	</ul>
+</p>
+
+
 <hr>
 
 <h3>提供 4 种访问方式</h3>
 <h3>1. ssh</h3>
 <p>
 	<code>$ ssh {{ user.username }}@nas.thucg.com</code><br>
-	你可以在本网站修改用户名<br>
-	密码每 90 天过期，请及时在本网站修改密码<br>
+	你可以在本网站修改用户名和密码<br>
 	sshfs 挂载命令：<code>$ sshfs -oreconnect {{ user.username }}@nas.thucg.com: /path/to/mount</code><br>
 	sshfs 卸载命令：<code>$ fusermount -u /path/to/mount</code><br>
-	服务器还支持 SFTP 协议<br>
+	支持 SFTP<br>
 </p>
 
 <h3>2. Windows 映射网络驱动器</h3>
@@ -33,7 +42,7 @@
 	注意：1) 两种系统对文件名大小写的敏感性不同，如果同时有 abc 和 ABC 两个文件，可能会出错。 2) 软链接会被当作文件夹，可能导致文件路径无限递归<br>
 </p>
 
-<h3>3. ftp</h3>
+<h3>3. ftp（ftp 协议有安全问题，尽量不要用这种方式）</h3>
 <p>
 	访问地址：<a href="ftp://nas.thucg.com/">ftp://nas.thucg.com/</a>，用户名密码与 ssh 相同<br>
 	你具有与 ssh 同等的访问权限，即可以写自己的 home 目录和 777 文件夹<br>
@@ -44,8 +53,8 @@
 <p>
   nfs 无法做用户身份验证，安全起见，所有用户都映射为 <code>nobody:nogroup</code>，只可读。如需开一个公共可写文件夹，可以 chmod 777（不推荐）<br>
   先安装 <code># apt install nfs-common</code><br>
-  方法一、通过 fstab 挂载：往 /etc/fstab 加一行 <code>nas.thucg.com:/nas	/path/to/mount	nfs	rsize=8192,wsize=8192,intr	0	0</code>，然后 <code># mount /path/to/mount</code><br>
-  方法二、直接挂载：<code># mount -tnfs -orsize=8192 -owsize=8192 -ointr nas.thucg.com:/nas /path/to/mount</code><br>
+  方法一、通过 fstab 挂载：往 /etc/fstab 加一行 <code>nas.thucg.com:/	/path/to/mount	nfs	rsize=8192,wsize=8192,intr	0	0</code>，然后 <code># mount /path/to/mount</code><br>
+  方法二、直接挂载：<code># mount -tnfs -orsize=8192 -owsize=8192 -ointr nas.thucg.com:/ /path/to/mount</code><br>
   卸载命令：<code># umount /path/to/mount</code><br>
   挂载时建议加 intr 选项，以免网络断开后无法 umount<br>
 </p>
@@ -53,13 +62,13 @@
 <h3>FAQ</h3>
 <p>
 	Q: 保存哪些目录？<br>
-	A: 只保证 <code>/nas</code> 下的文件会保存，其它目录（例如 <code>/tmp</code>）会在服务重启时重置<br>
-	A: 如果你的 home 目录超过 4 TB，或者文件数量超过 10,000,000 个，我们可能会要求你清理
+	A: 只有 <code>/nas</code> 下的文件会保存，其它目录（例如 <code>/tmp</code>、<code>/etc</code>、<code>/home</code>、<code>/usr</code>）会在服务重启时重置<br>
+	A: 如果你的文件大小超过 4 TB，或者文件数量超过 10,000,000 个，我们可能会要求你清理
 </p>
 <p>
 	Q: 密码错误<br>
-	A: 请在 <a href="http://nas.thucg.com/">nas.thucg.com</a> 查看服务目前的状态，有可能你的用户名不满足要求（例如用户名为 root）无法为你设置登录信息，或者出现了其它错误<br>
-	A: 每 90 天必须在本网站修改密码，否则密码过期。因为密码是根据网站用户动态设置的，所以请前往本网站设置密码，不要用 passwd 命令设置
+	A: 请在 <a href="http://nas.thucg.com/">nas.thucg.com</a> 查看服务目前的状态，有可能你的用户名不满足要求（例如你将自己的用户名改为 root），或者出现了其它错误<br>
+	A: 因为帐号是根据网站用户动态设置的，所以只能在本网站设置密码，没法用 passwd 命令设置
 </p>
 <p>
 	Q: 安全须知<br>
@@ -68,16 +77,16 @@
 	A: FTP 协议会明文传输密码，如果使用了 FTP 协议，则极有可能泄漏密码，请尽量避免使用 FTP 协议
 </p>
 <p>
-	Q: 连了外网吗？<br>
-	A: 服务器已通过 OpenVPN 连接到 6830，可以上网。因此你可以直接在 nas 服务器上下载数据，也可以在 ssh 里执行其它命令
+	Q: 服务器连了外网吗？<br>
+	A: 已通过 OpenVPN 接到 6830，可以上网。因此你可以直接在 NAS 上下载数据，也可以在 ssh 里执行数据解压等其它命令
 </p>
 <p>
-	Q: 校外如何访问？<br>
-	A: 校外只能通过 VPN 访问。可以使用 OpenVPN，并修改配置文件，将 nas.thucg.com 的 IP 地址路由到 vpn_gateway<br>
-	A: 原因：1) 学校封禁了常见服务的端口 2) 没有登录校园网帐号
+	Q: 在校外如何访问 NAS？<br>
+	A: 请看如何通过 <a href="{% url 'serverlist:vpn' %}">OpenVPN</a> 访问校内资源
 </p>
 <p>
 	Q: 数据备份<br>
-	A: 目前没有数据备份机制，文件系统安全性由 Linux 权限机制保证，硬件安全性由冗余磁盘阵列（RAID）提供，泄漏帐号导致的数据丢失无法恢复<br>
+	A: 没有数据备份机制，文件系统安全性由 Linux 权限机制保证，泄漏帐号导致的数据丢失无法恢复<br>
+	A: <code>/nas/raid</code> 由冗余磁盘阵列 RAID6 提供冗余，<code>/nas/disk-0</code>、<code>/nas/disk-1</code> 为非 RAID
 </p>
 {% endblock %}

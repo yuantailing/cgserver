@@ -4,10 +4,13 @@
 {% block content %}
 <h1>Welcome to OpenVPN</h1>
 <p>Configuration file can be downloaded <a href="{% static 'serverlist/cscg.ovpn' %}">here</a>.</p>
-<p>OpenVPN software can be downloaded <a href="https://openvpn.net/community-downloads/">here</a>.</p>
-<p>Mirror download (Installer, Windows 7 and later): <a href="http://open-access.oss-cn-beijing.aliyuncs.com/Downloads/openvpn-install-2.4.6-I602.exe">openvpn-install-2.4.6-I602.exe</a></p>
+<p>
+	OpenVPN software can be downloaded <a href="https://openvpn.net/community-downloads/">here</a>.
+	Mirror download (Installer, Windows 7 and later): <a href="http://open-access.oss-cn-beijing.aliyuncs.com/Downloads/openvpn-install-2.4.7-I603.exe">openvpn-install-2.4.7-I603.exe</a>
+</p>
 <p><b>Username:</b> <span>{{ user.username }}</span> | <a href="{% url 'serverlist:resetpassword' %}">change username</a></p>
 <p><b>Password:</b> *** (don't use GitHub password) | <a href="{% url 'serverlist:resetpassword' %}">reset password</a></p>
+<p><b>Password updated at:</b> {{ user.employee.password_updated_at | date:'Y-m-d H:i:s' }}</p>
 <hr>
 
 <h3>FAQ</h3>
