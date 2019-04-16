@@ -32,7 +32,10 @@ class EmployeeAdmin(admin.ModelAdmin):
 
 
 class GithubUserAdmin(admin.ModelAdmin):
-    list_display = ('id', 'github_id', 'github_login', 'github_email', )
+    def user_username(inst):
+        return inst.user.username
+
+    list_display = ('id', user_username, 'github_id', 'github_login', 'github_email', )
     readonly_fields = ('github_id', )
 
 

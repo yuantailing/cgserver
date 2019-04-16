@@ -10,7 +10,7 @@ import requests
 import time
 import uuid
 
-from .forms import ResetPasswordForm
+from .forms import LoginForm, ResetPasswordForm
 from .models import AccessLog, Client, ClientReport, Employee, GithubUser, UnknownReport
 from datetime import datetime, timedelta
 from django.conf import settings
@@ -242,7 +242,29 @@ def download(request):
     AccessLog.objects.create(user=request.user, ip=get_ip(request), target='serverlist:download')
     return render(request, 'serverlist/download.html')
 
-def login(request):
+def loginpassword(request):
+    form = LoginForm()
+    if request.method == 'POST':
+        form = LoginForm(request.POST)
+        if form.is_valid():
+            username = form.cleaned_data.get('username')
+            password = form.cleaned_data.get('password')
+            user = User.objects.filter(username=username).first()
+            if user:
+                if user.check_password(password):
+                    AccessLog.objects.create(user=user, ip=get_ip(request), target='serverlist:loginpassword')
+                    auth.login(request, user)
+                    if request.GET.get('next') is not None:
+                        return redirect(request.GET.get('next'))
+                    else:
+                        return redirect(reverse('serverlist:index'))
+                else:
+                    form.add_error('password', 'incorrect password')
+            else:
+                form.add_error('username', 'no such user')
+    return render(request, 'serverlist/loginpassword.html', {'form': form})
+
+def logingithuboauth(request):
     return redirect('https://github.com/login/oauth/authorize?client_id={:s}'.format(settings.GITHUB_CLIENT_ID))
 
 def githubcallback(request):

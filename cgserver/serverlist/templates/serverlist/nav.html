@@ -1,22 +1,27 @@
+{% load static %}
 <div>
 	{% if user.is_anonymous %}
-	<p>
+	<div>
 		<a href="{% url 'serverlist:index' %}">&lt;&lt; back to home</a> |
 		Anonymous user |
-		<a href="{% url 'serverlist:login' %}">login</a>
-	</p>
+		<a href="{% url 'serverlist:loginpassword' %}">login with password</a> |
+		<img src="{% static 'serverlist/GitHub-Mark-32px.png' %}" style="height: 1em;"> <a href="{% url 'serverlist:logingithuboauth' %}">login with GitHub OAuth</a>
+	</div>
 	{% else %}
 	<form action="{% url 'serverlist:logout' %}" method="post" style="display: none;" id="nav-form-logout">
 		{% csrf_token %}
 	</form>
-	<p>
+	<div>
 		<a href="{% url 'serverlist:index' %}">&lt;&lt; back to home</a> |
 		<a href="{% url 'serverlist:vpn' %}">openvpn</a> |
 		<a href="{% url 'serverlist:pptp' %}">pptp/l2tp</a> |
 		<a href="{% url 'serverlist:nas' %}">nas</a> |
 		<a href="{% url 'serverlist:download' %}">download</a> |
 		<a href="{% url 'serverlist:checkpermission' %}">{{ user.username }}</a> |
-		<a href="#" onclick="document.getElementById('nav-form-logout').submit()">logout</a>
-	</p>
+		<form action="{% url 'serverlist:logout' %}" method="post" style="display: inline;">
+			{% csrf_token %}
+			<input type="submit" value="logout">
+		</form>
+	</div>
 	{% endif %}
 </div>
