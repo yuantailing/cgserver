@@ -341,8 +341,8 @@ def vpnauth(request):
             return {'error': 1, 'msg': 'no such client'}, None, None
         if password != client.client_secret:
             return {'error': 1, 'msg': 'client secret error'}, None, None
-        report = client.clientreport_set.filter(ip=ip, created_at__gt=datetime.now() - timedelta(hours=1)).order_by('-created_at').first()
-        if not report:
+        report = client.clientreport_set.order_by('-id').first()
+        if not report or report.ip != ip:
             return {'error': 2, 'msg': 'client ip error'}, client, 'error'
         return {'error': 0, 'msg': 'ok'}, client, 'success'
     def try_user():
