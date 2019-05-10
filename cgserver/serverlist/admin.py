@@ -10,13 +10,14 @@ class AccessLogAdmin(admin.ModelAdmin):
     list_filter = ('user', 'client', 'ip', 'target', )
     readonly_fields = ('user', 'client', 'ip', 'target', 'param', 'info', )
 
+
 class ClientAdmin(admin.ModelAdmin):
     list_display = ('id', 'client_id', 'display_name', 'created_at', )
 
 
 class ClientReportAdmin(admin.ModelAdmin):
-    list_display = ('id', 'client', 'ip', 'version', 'created_at', )
-    list_filter = ('client__client_id', 'ip', 'version', )
+    list_display = ('id', 'client', 'ip', 'version', 'dns_success', 'created_at', )
+    list_filter = ('client__client_id', 'ip', 'version', 'dns_success', )
 
 
 class EmployeeAdmin(admin.ModelAdmin):

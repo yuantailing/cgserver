@@ -45,6 +45,7 @@
 			<th>Date</th>
 			<th>IP</th>
 			<th>version</th>
+			<th>DNS 成功更新</th>
 			<th>详细</th>
 		</tr>
 	</thead>
@@ -54,6 +55,7 @@
 			<td>{{ tr.created_at }}</td>
 			<td>{{ tr.ip }}</td>
 			<td>{{ tr.version }}</td>
+			<td>{{ tr.dns_success }}</td>
 			<td><a href="{% url 'serverlist:clientreport' client.pk tr.pk %}">详细</a></td>
 		</tr>
 		{% endfor %}

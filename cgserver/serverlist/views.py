@@ -7,6 +7,7 @@ import math
 import os
 import pprint
 import requests
+import threading
 import time
 import uuid
 
@@ -186,30 +187,37 @@ def recvreport(request):
         unknown_report.save()
         raise Http404
     else:
-        with transaction.atomic():
-            client_report = ClientReport.objects.create(client=client, ip=ip, version=version, report=json.dumps(report, sort_keys=True))
-            if settings.ROUTE53_DOMAIN_NAME:
-                client = boto3.Session(
-                    aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
-                    aws_secret_access_key=settings.AWS_ACCESS_KEY_SECRET,
-                ).client('route53')
-                client.change_resource_record_sets(
-                    HostedZoneId=settings.ROUTE53_HOSTED_ZONE_ID,
-                    ChangeBatch={
-                        'Comment': '',
-                        'Changes': [
-                            {
-                                'Action': 'UPSERT',
-                                'ResourceRecordSet': {
-                                    'Name': client_id.lower() + '.' + settings.ROUTE53_DOMAIN_NAME,
-                                    'Type': 'A',
-                                    'TTL': 120,
-                                    'ResourceRecords': [{'Value': ip},],
-                                }
-                            },
-                        ],
-                    },
-                )
+        client_report = ClientReport.objects.create(client=client, ip=ip, version=version, report=json.dumps(report, sort_keys=True))
+        if settings.ROUTE53_DOMAIN_NAME:
+            def dns_upsert():
+                try:
+                    client = boto3.Session(
+                        aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+                        aws_secret_access_key=settings.AWS_ACCESS_KEY_SECRET,
+                    ).client('route53')
+                    client.change_resource_record_sets(
+                        HostedZoneId=settings.ROUTE53_HOSTED_ZONE_ID,
+                        ChangeBatch={
+                            'Comment': '',
+                            'Changes': [
+                                {
+                                    'Action': 'UPSERT',
+                                    'ResourceRecordSet': {
+                                        'Name': client_id.lower() + '.' + settings.ROUTE53_DOMAIN_NAME,
+                                        'Type': 'A',
+                                        'TTL': 120,
+                                        'ResourceRecords': [{'Value': ip},],
+                                    }
+                                },
+                            ],
+                        },
+                    )
+                    client_report.dns_success = True
+                    client_report.save()
+                except:
+                    client_report.dns_success = False
+                    client_report.save()
+            threading.Thread(target=dns_upsert, daemon=True).start()
     return JsonResponse({'error': 0, 'msg': 'ok'}, json_dumps_params={'sort_keys': True})
 
 @check_access

@@ -24,6 +24,7 @@ class ClientReport(models.Model):
     ip = models.CharField(max_length=64, db_index=True, default=None)
     version = models.CharField(max_length=64, db_index=True, default=None)
     report = models.TextField(default=None)
+    dns_success = models.NullBooleanField(null=True, default=None)
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
     updated_at = models.DateTimeField(auto_now=True)
 
