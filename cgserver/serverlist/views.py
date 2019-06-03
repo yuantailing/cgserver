@@ -29,6 +29,7 @@ from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from helper import md4
 from six.moves import urllib
+from socket import AddressFamily
 
 # Create your views here.
 
@@ -43,11 +44,11 @@ def get_mac(report, ip):
     for if_addr in report['net_if_addrs'].values():
         internet_interface = False
         for snicaddr in if_addr:
-            if snicaddr[0] in (2, 10) and snicaddr[1] == ip:  # 2: ipv4, 10: ipv6
+            if snicaddr[0] in (AddressFamily.AF_INET, AddressFamily.AF_INET6) and snicaddr[1] == ip:
                 internet_interface = True
         if internet_interface:
             for snicaddr in if_addr:
-                if snicaddr[0] == 17:  # 17: MAC
+                if snicaddr[0] == 17 or snicaddr[0] == -1 and 17 == len(snicaddr[1]):  # psutil.AF_LINK is 17 on Linux, and it is -1 on Windows
                     return snicaddr[1]
     return None
 
