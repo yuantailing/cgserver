@@ -39,6 +39,18 @@ def get_ip(request):
     else:
         return request.META.get('REMOTE_ADDR')
 
+def get_mac(report, ip):
+    for if_addr in report['net_if_addrs'].values():
+        internet_interface = False
+        for snicaddr in if_addr:
+            if snicaddr[0] in (2, 10) and snicaddr[1] == ip:  # 2: ipv4, 10: ipv6
+                internet_interface = True
+        if internet_interface:
+            for snicaddr in if_addr:
+                if snicaddr[0] == 17:  # 17: MAC
+                    return snicaddr[1]
+    return None
+
 def check_access(func):
     @functools.wraps(func)
     def _decorator(request, *args, **kwargs):
@@ -76,6 +88,9 @@ def index(request):
         ips = [client_report.ip]
         if settings.ROUTE53_DOMAIN_NAME:
             ips.append(client.client_id.lower() + '.' + settings.ROUTE53_DOMAIN_NAME)
+        mac = get_mac(report, client_report.ip)
+        if mac:
+            ips.append(mac)
         tr.append(ips)
         if status == 'ok':
             tr.append([
@@ -143,7 +158,7 @@ def client(request, pk):
 @check_access
 def clientchart(request, pk):
     client = get_object_or_404(Client.objects, pk=pk)
-    client_reports = ClientReport.objects.filter(client=client).filter(created_at__gt=datetime.now() - timedelta(days=14)).order_by('-created_at')
+    client_reports = ClientReport.objects.filter(client=client).filter(created_at__gt=datetime.now() - timedelta(days=7)).order_by('-created_at')
     data = []
     for report in client_reports:
         day = (report.created_at.timestamp() - timezone.now().timestamp()) / 86400.
@@ -165,9 +180,11 @@ def clientchart(request, pk):
 @check_access
 def clientreport(request, client_id, report_id):
     client_report = get_object_or_404(ClientReport.objects.select_related('client'), id=report_id, client_id=client_id)
-    report_str = pprint.pformat(json.loads(client_report.report), width=160)
+    report = json.loads(client_report.report)
+    mac = get_mac(report, client_report.ip)
+    report_str = pprint.pformat(report, width=160)
     AccessLog.objects.create(user=request.user, ip=get_ip(request), target='serverlist:clientreport', param=report_id)
-    return render(request, 'serverlist/clientreport.html', {'client_report': client_report, 'report_str': report_str})
+    return render(request, 'serverlist/clientreport.html', {'client_report': client_report, 'mac': mac, 'report_str': report_str})
 
 @csrf_exempt
 def recvreport(request):

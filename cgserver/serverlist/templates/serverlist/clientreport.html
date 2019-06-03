@@ -15,6 +15,10 @@
 			<td>{{ client_report.ip }}</td>
 		</tr>
 		<tr>
+			<th>MAC</th>
+			<td>{{ mac }}</td>
+		</tr>
+		<tr>
 			<th>version</th>
 			<td>{{ client_report.version }}</td>
 		</tr>
@@ -39,10 +43,11 @@
 	<li>cpu_times: <code>scputimes(user, nice, system, idle, iowait, irq, softirq, steal, guest, guest_nice)</code></li>
 	<li>cpu_times_percent: <code>scputimes(user, nice, system, idle, iowait, irq, softirq, steal, guest, guest_nice)</code></li>
 	<li>disk_io_counters: <code>sdiskio(read_count, write_count, read_bytes, write_bytes, read_time, write_time, read_merged_count, write_merged_count, busy_time)</code></li>
-	<li>disk_usage: <code>[sdiskpart(device, mountpoint, fstype, opts)]</code></li>
+	<li>disk_partitions: <code>[sdiskpart(device, mountpoint, fstype, opts)]</code></li>
+	<li>disk_usage: <code>[sdiskusage(total, used, free, percent)]</code></li>
 	<li>cpu_freq: <code>sdiskusage(total, used, free, percent)</code></li>
 	<li>net_if_addrs: <code>{[snicaddr(family, address, netmask, broadcast, ptp)]}</code></li>
-	<li>net_if_stats: <code>{[snicstats(isup, duplex, speed, mtu)]}</code></li>
+	<li>net_if_stats: <code>{snicstats(isup, duplex, speed, mtu)}</code></li>
 	<li>net_io_counters: <code>snetio(bytes_sent, bytes_recv, packets_sent, packets_recv, errin, errout, dropin, dropout)</code></li>
 	<li>swap_memory: <code>sswap(total, used, free, percent, sin, sout)</code></li>
 	<li>users: <code>[suser(name, terminal, host, started, pid)]</code></li>
