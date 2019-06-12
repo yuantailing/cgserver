@@ -176,7 +176,7 @@ def clientchart(request, pk):
             } for dev in report.get('nvmlDevices', [])],
         })
     AccessLog.objects.create(user=request.user, ip=get_ip(request), target='serverlist:clientchart', param=pk)
-    return render(request, 'serverlist/clientchart.html', {'client': client, 'data': json.dumps(data)})
+    return render(request, 'serverlist/clientchart.html', {'client': client, 'data': base64.b64encode(json.dumps(data, ensure_ascii=True).encode()).decode()})
 
 @check_access
 def clientreport(request, client_id, report_id):
