@@ -159,7 +159,7 @@ def client(request, pk):
 @check_access
 def clientchart(request, pk):
     client = get_object_or_404(Client.objects, pk=pk)
-    client_reports = ClientReport.objects.filter(client=client).filter(created_at__gt=datetime.now() - timedelta(days=7)).order_by('-created_at')
+    client_reports = ClientReport.objects.filter(client=client).filter(created_at__gt=timezone.now() - timedelta(days=7)).order_by('-created_at')
     data = []
     for report in client_reports:
         day = (report.created_at.timestamp() - timezone.now().timestamp()) / 86400.

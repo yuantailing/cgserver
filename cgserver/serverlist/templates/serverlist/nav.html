@@ -8,9 +8,6 @@
 		<img src="{% static 'serverlist/GitHub-Mark-32px.png' %}" style="height: 1em;"> <a href="{% url 'serverlist:logingithuboauth' %}">login with GitHub OAuth</a>
 	</div>
 	{% else %}
-	<form action="{% url 'serverlist:logout' %}" method="post" style="display: none;" id="nav-form-logout">
-		{% csrf_token %}
-	</form>
 	<div>
 		<a href="{% url 'serverlist:index' %}">&lt;&lt; back to home</a> |
 		<a href="{% url 'serverlist:vpn' %}">openvpn</a> |
