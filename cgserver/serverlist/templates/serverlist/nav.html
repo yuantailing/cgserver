@@ -1,24 +1,39 @@
 {% load static %}
-<div>
-	{% if user.is_anonymous %}
-	<div>
-		<a href="{% url 'serverlist:index' %}">&lt;&lt; back to home</a> |
-		Anonymous user |
-		<a href="{% url 'serverlist:loginpassword' %}">login with password</a> |
-		<img src="{% static 'serverlist/GitHub-Mark-32px.png' %}" style="height: 1em;"> <a href="{% url 'serverlist:logingithuboauth' %}">login with GitHub OAuth</a>
+{% load serverlisttags %}
+<header class="navbar navbar-expand navbar-dark flex-column flex-md-row bd-navbar" style="background-color: #743481;">
+	<a class="navbar-brand mr-0 mr-md-2" href="{% url 'serverlist:index' %}">CSCG</a>
+	<div class="navbar-nav-scroll">
+		<ul class="navbar-nav bd-navbar-nav flex-row">
+			{% if user.employee.can_access %}
+			<li class="nav-item"><a class="nav-link{% oneq request.resolver_match.url_name 'index'    ' active' '' %}" href="{% url 'serverlist:index' %}">ServerList</a></li>
+			<li class="nav-item"><a class="nav-link{% oneq request.resolver_match.url_name 'vpn'      ' active' '' %}" href="{% url 'serverlist:vpn' %}">OpenVPN</a></li>
+			<li class="nav-item"><a class="nav-link{% oneq request.resolver_match.url_name 'pptp'     ' active' '' %}" href="{% url 'serverlist:pptp' %}">PPTP/L2TP</a></li>
+			<li class="nav-item"><a class="nav-link{% oneq request.resolver_match.url_name 'nas'      ' active' '' %}" href="{% url 'serverlist:nas' %}">NAStorage</a></li>
+			<li class="nav-item"><a class="nav-link{% oneq request.resolver_match.url_name 'download' ' active' '' %}" href="{% url 'serverlist:download' %}">Download</a></li>
+			{% endif %}
+		</ul>
 	</div>
-	{% else %}
-	<div>
-		<a href="{% url 'serverlist:index' %}">&lt;&lt; back to home</a> |
-		<a href="{% url 'serverlist:vpn' %}">openvpn</a> |
-		<a href="{% url 'serverlist:pptp' %}">pptp/l2tp</a> |
-		<a href="{% url 'serverlist:nas' %}">nas</a> |
-		<a href="{% url 'serverlist:download' %}">download</a> |
-		<a href="{% url 'serverlist:checkpermission' %}">{{ user.username }}</a> |
-		<form action="{% url 'serverlist:logout' %}" method="post" style="display: inline;">
-			{% csrf_token %}
-			<input type="submit" value="logout">
-		</form>
-	</div>
-	{% endif %}
-</div>
+	<ul class="navbar-nav flex-row ml-md-auto d-md-flex">
+		{% if user.is_anonymous %}
+		<li class="nav-item dropdown">
+			<a class="nav-item nav-link dropdown-toggle mr-md-2" href="#" id="bd-versions" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Anonymous user </a>
+			<div class="dropdown-menu dropdown-menu-right" aria-labelledby="bd-versions">
+				<a class="dropdown-item" href="{% url 'serverlist:loginpassword' %}">Login with password</a>
+				<a class="dropdown-item" href="{% url 'serverlist:logingithuboauth' %}">Login with GitHub OAuth <img src="{% static 'serverlist/GitHub-Mark-32px.png' %}" style="height: 1em;"></a></a>
+			</div>
+		</li>
+		{% else %}
+		<li class="nav-item dropdown">
+			<a class="nav-item nav-link dropdown-toggle mr-md-2" href="#" id="bd-versions" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">{{ user.username }} </a>
+			<div class="dropdown-menu dropdown-menu-right" aria-labelledby="bd-versions">
+				<a class="dropdown-item" href="{% url 'serverlist:checkpermission' %}">Profile</a>
+				<div class="dropdown-divider"></div>
+				<form action="{% url 'serverlist:logout' %}" method="post">
+					{% csrf_token %}
+					<input class="dropdown-item" style="cursor: pointer;" type="submit" value="Logout">
+				</form>
+			</div>
+		</li>
+		{% endif %}
+	</ul>
+</header>

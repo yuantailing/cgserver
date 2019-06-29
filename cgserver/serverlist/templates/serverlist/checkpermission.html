@@ -1,26 +1,26 @@
 {% extends "./base.html" %}
+{% load static %}
 {% block title %}Account status{% endblock %}
 
 {% block content %}
 
 {% if user.is_anonymous %}
 
-<h1>Login required</h1>
-<p>Please login with password or login with GitHub OAuth.</p>
+<h1 class="mb-4">需要授权</h1>
+<p>请 <a href="{% url 'serverlist:loginpassword' %}">验证密码</a> 或 <a href="{% url 'serverlist:logingithuboauth' %}">通过 GitHub 授权</a> <img src="{% static 'serverlist/GitHub-Mark-32px.png' %}" style="height: 1em;">。</p>
 
 {% elif user.employee.can_access %}
 
-<h1>Welcome</h1>
-<p>username: <span>{{ user.username }}</span></p>
-<p>email: <span>{{ user.email }}</span></p>
-<p>Please click "back to home" to continue.</p>
+<h1 class="mb-4">帐号信息</h1>
+<p>Username: <span>{{ user.username }}</span></p>
+<p>Email: <span>{{ user.email }}</span></p>
 <p>Revoke your GitHub authorization? Click <a href="https://github.com/settings/connections/applications/{{ GITHUB_CLIENT_ID }}">here</a>.</p>
 
 {% else %}
 
-<h1>Permission denied</h1>
-<p>username: <span>{{ user.username }}</span></p>
-<p>email: <span>{{ user.email }}</span></p>
+<h1 class="mb-4">帐号信息（未激活）</h1>
+<p>Username: <span>{{ user.username }}</span></p>
+<p>Email: <span>{{ user.email }}</span></p>
 <p>Please notify administrator to activate your account.</p>
 <p>If you have just joined <a href="https://github.com/thucg">github.com/thucg</a>, please logout and login again.</p>
 <p>Revoke your GitHub authorization? Click <a href="https://github.com/settings/connections/applications/{{ GITHUB_CLIENT_ID }}">here</a>.</p>

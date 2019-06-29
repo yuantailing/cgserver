@@ -3,7 +3,7 @@
 
 {% block content %}
 <h1>Client report</h1>
-<p><a href="{% url 'serverlist:client' client_report.client_id %}">&lt; back</a></p>
+<p><a href="{% url 'serverlist:client' client_report.client_id %}">&lt;&lt; 返回</a></p>
 <table border="1">
 	<tbody>
 		<tr>
@@ -36,7 +36,7 @@
 		</tr>
 	<tbody>
 </table>
-<h4>格式说明</h4>
+<h3 class="mt-4">格式说明</h3>
 <ul>
 	<li>cpu_freq: <code>scpufreq(current, min, max)</code></li>
 	<li>cpu_stats: <code>scpustats(ctx_switches, interrupts, soft_interrupts, syscalls)</code></li>

@@ -2,7 +2,7 @@
 {% load static %}
 
 {% block content %}
-<h1>Welcome to PPTP / L2TP</h1>
+<h1 class="mb-4">PPTP / L2TP</h1>
 <h3>PPTP</h3>
 <ul>
 	<li>Username: {{ PPTP_USERNAME }}</li>
@@ -10,7 +10,7 @@
 </ul>
 <h3>L2TP</h3>
 <ul>
-	<li>Pre-shared key: {{ L2TP_PRESHAREDKEY }}</li>
+	<li>预共享密钥: {{ L2TP_PRESHAREDKEY }}</li>
 	<li>Username: {{ L2TP_USERNAME }}</li>
 	<li>Password: {{ L2TP_PASSWORD }}</li>
 </ul>
@@ -18,12 +18,8 @@
 
 <h3>FAQ</h3>
 <p>
-	Q: 安全性如何？<br>
-	A: 警告：PPTP 和 L2TP 不认证服务器身份，因此路由链路上的任何人和局域网 ARP 欺骗都可以窃取你与服务器间的所有通信内容。建议改用 OpenVPN
-</p>
-<p>
 	Q: 可以设置成只有校外流量走 VPN，校内流量直连吗？<br>
-	A: 否，PPTP 默认把所有流量都会导向服务器，不会区分校内和校外流量
+	A: 否，PPTP 默认把所有流量都会导向服务器，不会区分校内和校外流量，你需要手动修改路由表。对此 <a href="{% url 'serverlist:vpn' %}">OpenVPN</a> 更智能一点
 </p>
 <p>
 	Q: 上得了主页但连不上 PPTP / L2TP<br>

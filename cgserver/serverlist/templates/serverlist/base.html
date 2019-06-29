@@ -1,20 +1,21 @@
-<!DOCTYPE html>
+{% load static %}<!DOCTYPE html>
 <html lang="en">
 	<head>
 		<meta charset="UTF-8">
-		<title>{% block title %}CG server{% endblock %}</title>
+		<title>{% block title %}CG Server{% endblock %}</title>
 		{% block head %}{% endblock %}
-		<style>
-table {
-	border-collapse: collapse;
-}
-		</style>
+		<link href="{% static 'serverlist/bootstrap.min.css' %}" rel="stylesheet">
+		<script src="{% static 'serverlist/jquery-3.3.1.slim.min.js' %}"></script>
+		<script src="{% static 'serverlist/bootstrap.min.js' %}"></script>
+		<style>{% include "./nav.css" %}</style>
 	</head>
 	<body>
-		{% block nav %}{% include "./nav.html" %}{% endblock %}
-		<div class="container">
+		{% include "./nav.html" %}
+		{% block container %}
+		<div class="container mt-4 mb-5">
 			{% block content %}{{ content }}{% endblock %}
 		</div>
-		{% block footer %}{% include "./footer.html" %}{% endblock %}
+		{% endblock %}
+		{% include "./footer.html" %}
 	</body>
 </html>

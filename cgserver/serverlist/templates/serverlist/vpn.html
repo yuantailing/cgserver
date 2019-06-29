@@ -2,11 +2,13 @@
 {% load static %}
 
 {% block content %}
-<h1>Welcome to OpenVPN</h1>
-<p>Configuration file can be downloaded <a href="{% static 'serverlist/cscg.ovpn' %}">here</a>.</p>
+<h1 class="mb-4">OpenVPN</h1>
+<p>配置文件：<a href="{% static 'serverlist/cscg.ovpn' %}">点击下载</a></p>
 <p>
-	OpenVPN software can be downloaded <a href="https://openvpn.net/community-downloads/">here</a>.
-	Mirror download (Installer, Windows 7 and later): <a href="http://open-access.oss-cn-beijing.aliyuncs.com/Downloads/openvpn-install-2.4.7-I603.exe">openvpn-install-2.4.7-I603.exe</a>
+	下载软件：
+	<a href="https://openvpn.net/community-downloads/">官方网站</a>
+	|
+	镜像下载 <a href="http://open-access.oss-cn-beijing.aliyuncs.com/Downloads/openvpn-install-2.4.7-I603.exe">openvpn-install-2.4.7-I603.exe</a>（仅 Windows 7 以上可用）
 </p>
 <p><b>Username:</b> <span>{{ user.username }}</span> | <a href="{% url 'serverlist:resetpassword' %}">change username</a></p>
 <p><b>Password:</b> *** (don't use GitHub password) | <a href="{% url 'serverlist:resetpassword' %}">reset password</a></p>
@@ -23,9 +25,9 @@
 </p>
 <p>
 	Q: Linux 如何配置 OpenVPN<br>
-	A: 两种方案，推荐后一种，以服务模式运行，避免多开一个 terminal，其它用户也可重启该服务<br>
+	A: 两种方案，推荐先用前一种测试一下可以连接，然后换成后一种，以服务模式运行，避免多开一个 terminal，其它用户也可重启该服务<br>
 	A1: 1) 安装 <code>$ sudo apt install openvpn</code>，2) 下载配置文件 <a href="{% static 'serverlist/cscg.ovpn' %}">cscg.ovpn</a>，3) 运行 <code>$ sudo openvpn cscg.ovpn</code><br>
-	A2: 1) 安装 <code>$ sudo apt install openvpn</code>，2) 下载配置文件到指定路径 <code>$ sudo curl <script>document.write(window.location.origin);</script>{% static 'serverlist/cscg.ovpn' %} -Lo/etc/openvpn/cscg.conf</code>，3) 运行 <code>$ sudo service openvpn@cscg restart</code>（或 <code>$ sudo systemctl restart openvpn@cscg</code>），有的版本不要加 <code>@cscg</code>
+	A2: 1) 安装 <code>$ sudo apt install openvpn</code>，2) 下载配置文件到指定路径 <code>$ sudo curl <script>document.write(window.location.origin);</script>{% static 'serverlist/cscg.ovpn' %} -Lo/etc/openvpn/cscg.conf</code>，3) 运行 <code>$ sudo service openvpn restart</code>（或 <code>$ sudo systemctl restart openvpn</code>）
 </p>
 <p>
 	Q: net.tsinghua.edu.cn 仍看到自己的帐号<br>
@@ -41,7 +43,7 @@
 </p>
 <p>
 	Q: 我的网络环境比较复杂，使用了 TCP 代理，使用 UDP 协议连不上 OpenVPN<br>
-	A: 我们还开了 TCP 协议的 OpenVPN 服务，可以把配置文件 <code>proto udp</code> 这行改成 <code>proto tcp</code> 再试
+	A: 我们还开了 TCP 协议的 OpenVPN 服务，可以把配置文件中 <code>proto udp</code> 这行改成 <code>proto tcp</code> 再试
 </p>
 <p>
 	Q: OpenVPN 与 PPTP 相比，有什么优缺点<br>

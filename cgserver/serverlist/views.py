@@ -436,8 +436,8 @@ def resetpassword(request):
             has_error = True
             username_validator = auth.validators.ASCIIUsernameValidator()
             password_validators = [
-                auth.password_validation.MinimumLengthValidator(),
                 auth.password_validation.UserAttributeSimilarityValidator(),
+                auth.password_validation.MinimumLengthValidator(),
                 auth.password_validation.CommonPasswordValidator(),
                 auth.password_validation.NumericPasswordValidator(),
             ]

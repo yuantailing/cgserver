@@ -2,7 +2,7 @@
 {% load static %}
 
 {% block content %}
-<h1>Welcome to NAS</h1>
+<h1 class="mb-4">存储空间（Network Attached Storage）</h1>
 <p><b>Hostname:</b> <a href="http://nas.thucg.com/">nas.thucg.com</a></p>
 <p><b>Username:</b> <span>{{ user.username }}</span> | <a href="{% url 'serverlist:resetpassword' %}">change username</a></p>
 {% if password_set %}
@@ -42,14 +42,7 @@
 	注意：1) 两种系统对文件名大小写的敏感性不同，如果同时有 abc 和 ABC 两个文件，可能会出错。 2) 软链接会被当作文件夹，可能导致文件路径无限递归<br>
 </p>
 
-<h3>3. ftp（ftp 协议有安全问题，尽量不要用这种方式）</h3>
-<p>
-	访问地址：<a href="ftp://nas.thucg.com/">ftp://nas.thucg.com/</a>，用户名密码与 ssh 相同<br>
-	你具有与 ssh 同等的访问权限，即可以写自己的 home 目录和 777 文件夹<br>
-	你可以在 Chrome 等浏览器里浏览，也可以在 Windows Explorer 里浏览和修改，也可以使用其它 FTP 客户端<br>
-</p>
-
-<h3>4. nfs</h3>
+<h3>3. nfs</h3>
 <p>
   nfs 无法做用户身份验证，安全起见，所有用户都映射为 <code>nobody:nogroup</code>，只可读。如需开一个公共可写文件夹，可以 chmod 777（不推荐）<br>
   先安装 <code># apt install nfs-common</code><br>
@@ -57,6 +50,13 @@
   方法二、直接挂载：<code># mount -tnfs -orsize=8192 -owsize=8192 -ointr nas.thucg.com:/ /path/to/mount</code><br>
   卸载命令：<code># umount /path/to/mount</code><br>
   挂载时建议加 intr 选项，以免网络断开后无法 umount<br>
+</p>
+
+<h3 class="text-muted">4. ftp（由于安全问题，尽量不要用 ftp）</h3>
+<p class="text-muted">
+	访问地址：<a href="ftp://nas.thucg.com/">ftp://nas.thucg.com/</a>，用户名密码与 ssh 相同<br>
+	你具有与 ssh 同等的访问权限，即可以写自己的 home 目录和 777 文件夹<br>
+	你可以在 Chrome 等浏览器里浏览，也可以在 Windows Explorer 里浏览和修改，也可以使用其它 FTP 客户端<br>
 </p>
 
 <h3>FAQ</h3>
@@ -71,10 +71,9 @@
 	A: 因为帐号是根据网站用户动态设置的，所以只能在本网站设置密码，没法用 passwd 命令设置
 </p>
 <p>
-	Q: 安全须知<br>
+	Q: 权限设置<br>
 	A: home 目录的默认权限是 <code>rwx------</code>，仅自己可读。若要其它登录用户可读 <code>$ chmod 750 {{ home }}</code>，若要 NFS mount 公开可读 <code>$ chmod 755 {{ home }}</code><br>
-	A: 建议不要在自己的 home 目录授予其它用户写权限，否则其它用户和来自网络的匿名用户可以修改你的数据<br>
-	A: FTP 协议会明文传输密码，如果使用了 FTP 协议，则极有可能泄漏密码，请尽量避免使用 FTP 协议
+	A: 不建议在自己的 home 目录授予其它用户写权限，否则其它用户和来自网络的匿名用户可以修改你的数据<br>
 </p>
 <p>
 	Q: 服务器连了外网吗？<br>
