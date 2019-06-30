@@ -1,4 +1,6 @@
 import datetime
+import os
+import uuid
 
 from django.contrib.auth.models import User
 from django.core.validators import MaxValueValidator, MinValueValidator
@@ -56,6 +58,33 @@ class Employee(models.Model):
 
     def __str__(self):
         return 'Employee<{:s}>'.format(self.user.username)
+
+
+class FtpPerm(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    path = models.CharField(max_length=255, db_index=True, blank=True, default=None)
+    isdir = models.BooleanField(db_index=True, default=None)
+    permission = models.CharField(max_length=64, db_index=True, default=None, choices=((p, p) for p in ['none', 'read', 'write', 'admin']))
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ['user', 'path']
+
+    @staticmethod
+    def issimplepath(path):
+        if path == '':
+            return True
+        if '\\' in path:
+            return False
+        basedir = os.path.realpath(os.path.join('/does-not-exist', str(uuid.uuid4())))
+        realpath = os.path.realpath(os.path.join(basedir, path))
+        return realpath[:len(basedir) + 1] == basedir + os.sep and realpath[len(basedir) + 1:].replace(os.sep, '/') == path
+
+    def save(self, *args, **kwargs):
+        if not FtpPerm.issimplepath(self.path):
+            raise ValueError('not a simple path')
+        super().save(*args, **kwargs)
 
 
 class GithubUser(models.Model):

@@ -11,11 +11,11 @@ import threading
 import time
 import uuid
 
-from .forms import LoginForm, ResetPasswordForm
-from .models import AccessLog, Client, ClientReport, Employee, GithubUser, UnknownReport
+from .forms import LoginForm, ResetPasswordForm, FtpForm
+from .models import AccessLog, Client, ClientReport, Employee, FtpPerm, GithubUser, UnknownReport
 from datetime import datetime, timedelta
 from django.conf import settings
-from django.contrib import auth
+from django.contrib import auth, messages
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
@@ -256,6 +256,86 @@ def pptp(request):
     return render(request, 'serverlist/pptp.html', passwords)
 
 @check_access
+def ftp(request):
+    def isadmin(path, isdir):
+        my = request.user.ftpperm_set.filter(permission='admin')
+        if my.filter(path=path, isdir=isdir).exists():
+            return True
+        elif my.filter(isdir=True, path='').exists():
+            return True
+        elif my.filter(isdir=True).extra(where=['%s LIKE {table}.{column}||%s'.format(table=FtpPerm._meta.db_table, column=FtpPerm._meta.get_field('path').column)], params=(path, '/%')).exists():
+            return True
+        else:
+            return False
+
+    if request.method == 'POST':
+        bad = True
+        form = FtpForm(request.POST)
+        if form.is_valid():
+            action = form.cleaned_data.get('action')
+            if action == 'post':
+                path = form.cleaned_data.get('path')
+                isdir = form.cleaned_data.get('isdir')
+                path = path.replace('\\', '/').strip('/')
+                if isdir is not None:
+                    if path == '':
+                        messages.warning(request, '不允许自助申请根目录权限')
+                    elif not FtpPerm.issimplepath(path):
+                        messages.warning(request, '路径不合法，可能是因为有特殊字符或“..”')
+                    elif FtpPerm.objects.filter(user=request.user, path=path).exists():
+                        messages.warning(request, '该路径已存在，请勿重复添加：{path}'.format(path=path))
+                    else:
+                        ftpperm = FtpPerm.objects.create(user=request.user, path=path, isdir=isdir, permission='none')
+                        AccessLog.objects.create(user=request.user, ip=get_ip(request), target='serverlist:ftp', param='post', info=json.dumps({'id': ftpperm.id, 'path': path, 'isdir': isdir}, sort_keys=True))
+                    bad = False
+            elif action == 'put':
+                id = form.cleaned_data.get('id')
+                permission = form.cleaned_data.get('permission')
+                ftpperm = get_object_or_404(FtpPerm.objects, id=id)
+                if isadmin(ftpperm.path, ftpperm.isdir):
+                    ftpperm.permission = permission
+                    ftpperm.save()
+                    AccessLog.objects.create(user=request.user, ip=get_ip(request), target='serverlist:ftp', param='put', info=json.dumps({'id': id, 'permission': permission}, sort_keys=True))
+                    bad = False
+            elif action == 'delete':
+                id = form.cleaned_data.get('id')
+                ftpperm = get_object_or_404(FtpPerm.objects, id=id)
+                if ftpperm.user == request.user or isadmin(ftpperm.path, ftpperm.isdir):
+                    ftpperm.delete()
+                    AccessLog.objects.create(user=request.user, ip=get_ip(request), target='serverlist:ftp', param='delete', info=json.dumps({'id': id}, sort_keys=True))
+                    bad = False
+        if bad:
+            return HttpResponseBadRequest('bad form')
+        else:
+            return redirect(reverse('serverlist:ftp'))
+
+    myperms = FtpPerm.objects.filter(user=request.user).order_by('path')
+    managedperms = FtpPerm.objects.raw(
+        'SELECT MIN(fp1.{pk}) AS id, fp1.{user_id} AS user_id, fp1.{path} AS path, MIN(fp1.{isdir}) AS isdir, MIN(fp1.{permission}) AS permission, MIN(user.{username}) AS username, MIN(user.{email}) AS email FROM {fptb} AS fp1 '
+        'INNER JOIN {fptb} AS fp2 '
+        'ON (fp1.{isdir}=fp2.{isdir} AND fp1.{path}=fp2.{path}) OR (fp2.{isdir}=1 AND (fp1.{path} LIKE fp2.{path}||"/%" OR fp2.{path}="")) '
+        'LEFT OUTER JOIN {user} AS user '
+        'ON fp1.{user_id}=user.{id} '
+        'WHERE fp2.{user_id}={request_user_id} AND fp2.{permission}="admin" '
+        'GROUP BY fp1.{user_id}, fp1.{path} '
+        'ORDER BY fp1.{path}, user.{username}'.format(
+            fptb=FtpPerm._meta.db_table,
+            pk=FtpPerm._meta.pk.column,
+            user_id=FtpPerm._meta.get_field('user_id').column,
+            path=FtpPerm._meta.get_field('path').column,
+            isdir=FtpPerm._meta.get_field('isdir').column,
+            permission=FtpPerm._meta.get_field('permission').column,
+            user=User._meta.db_table,
+            id=User._meta.get_field('id').column,
+            username=User._meta.get_field('username').column,
+            email=User._meta.get_field('email').column,
+            request_user_id=request.user.id,
+        )
+    )
+    AccessLog.objects.create(user=request.user, ip=get_ip(request), target='serverlist:ftp')
+    return render(request, 'serverlist/ftp.html', {'myperms': myperms, 'managedperms': managedperms, 'form': FtpForm()})
+
+@check_access
 def nas(request):
     uid = '{:d}'.format(request.user.employee.staff_number + 10000)
     home = '/nas/raid/{:s}'.format(uid)
@@ -390,6 +470,27 @@ def vpnauth(request):
         return JsonResponse(res, json_dumps_params={'sort_keys': True})
     else:
         return JsonResponse(res, json_dumps_params={'sort_keys': True})
+
+@csrf_exempt
+def ftpauth(request):
+    username = request.POST.get('username')
+    password = request.POST.get('password')
+    client_secret = request.POST.get('client_secret')
+    if client_secret != settings.FTP_CLIENT_SECRET:
+        return HttpResponseBadRequest('ftp client secret error')
+    user = User.objects.filter(username=username).first()
+    if not user:
+        res = {'error': 1, 'msg': 'no such user'}
+    elif not user.check_password(password):
+        res = {'error': 2, 'msg': 'password error'}
+    elif not hasattr(user, 'employee') or not user.employee.can_access:
+        res = {'error': 3, 'msg': 'no access'}
+    else:
+        perms = {}
+        for perm in user.ftpperm_set.exclude(permission='none'):
+            perms[perm.path] = ['w' if perm.permission in ('write', 'admin') else 'r', perm.isdir]
+        res = {'error': 0, 'msg': 'ok', 'perms': perms}
+    return JsonResponse(res, json_dumps_params={'sort_keys': True})
 
 @csrf_exempt
 def cgnas_api(request):

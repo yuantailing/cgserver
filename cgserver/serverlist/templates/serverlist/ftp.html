@@ -1,0 +1,136 @@
+{% extends "./base.html" %}
+{% load serverlisttags %}
+
+{% block content %}
+
+{% if messages %}
+    {% for message in messages %}
+	<div class="alert alert-danger" role="alert">{{ message }}</div>
+    {% endfor %}
+</ul>
+{% endif %}
+
+{% if tips %}
+<div class="alert alert-danger" role="alert">{{ tips }}</div>
+{% endif %}
+
+<h1 class="mb-4">FTP</h1>
+<h3>操作说明</h3>
+<ul>
+	<li>步骤一：用户添加路径 <i>path</i>，初始权限为 <code>{{ 'none'|ftppermtrans }}</code></li>
+	<li>步骤二：拥有 <i>path</i> 或 <i>path</i> 父目录的管理员将用户权限修改为 <code>{{ 'read'|ftppermtrans }}</code>、<code>{{ 'write'|ftppermtrans }}</code> 或 <code>{{ 'admin'|ftppermtrans }}</code></li>
+	<li>步骤三：使用完毕后，用户或管理员可以删除这条权限</li>
+</ul>
+<p>路径示例：<code>cscg/chinagraph2016</code>、<code>oslab/people/~zhangsan</code></p>
+
+<h3 class="mb-3">我申请的路径</h3>
+<table class="table table-sm table-hover">
+	<thead>
+		<tr>
+			<th>#</th>
+			<th>路径</th>
+			<th>类型</th>
+			<th>权限</th>
+			<th>操作</th>
+		</tr>
+	</thead>
+	<tbody>
+		{% for perm in myperms %}
+		<tr>
+			<td>{{ forloop.counter }}</td>
+			<td>{% if perm.path != '' %}{{ perm.path }}{% else %}<span class="text-success">[根目录]</span>{% endif %}</td>
+			<td>{% if perm.isdir %}目录和子目录{% else %}单个文件{% endif %}</td>
+			<td>{{ perm.permission|ftppermtrans }}</td>
+			<td><button class="btn btn-sm btn-danger" onclick="form_delete({{ perm.id }}, {{ perm.user_id }}, {{ request.user.id }})">删除</button></td>
+		</tr>
+		{% endfor %}
+		<tr>
+			<td></td>
+			<td><input class="form-control form-control-sm" id="input-path" placeholder="Please input a path"></td>
+			<td>
+				<select class="form-control form-control-sm" id="input-isdir">
+					<option value="true">目录和子目录</option>
+					<option value="false">单个文件</option>
+				</select>
+			</td>
+			<td>No access</td>
+			<td><button class="btn btn-sm btn-success" onclick="form_post({{ perm.id }})">添加</button></td>
+		</tr>
+	</tbody>
+</table>
+
+<h3 class="mb-3">我管理的路径</h3>
+<table class="table table-sm table-hover">
+	<thead>
+		<tr>
+			<th>#</th>
+			<th>用户名</th>
+			<th>路径</th>
+			<th>类型</th>
+			<th>权限</th>
+			<th>操作</th>
+		</tr>
+	</thead>
+	<tbody>
+		{% for perm in managedperms %}
+		<tr>
+			<td>{{ forloop.counter }}</td>
+			<td title="{{ perm.email }}">{{ perm.username }}</td>
+			<td>{% if perm.path != '' %}{{ perm.path }}{% else %}<span class="text-success">[根目录]</span>{% endif %}</td>
+			<td>{% if perm.isdir %}目录和子目录{% else %}单个文件{% endif %}</td>
+			<td>
+				<select class="form-control form-control-sm" id="input-permission-{{ perm.id }}">
+					<option value="none"  {% eqorno perm.permission 'none'  'selected' '' %}>None</option>
+					<option value="read"  {% eqorno perm.permission 'read'  'selected' '' %}>Read only</option>
+					<option value="write" {% eqorno perm.permission 'write' 'selected' '' %}>Read &amp; Write</option>
+					<option value="admin" {% eqorno perm.permission 'admin' 'selected' '' %}>Admin</option>
+				</select>
+			</td>
+			<td>
+				<button class="btn btn-sm btn-primary" onclick="form_put({{ perm.id }}, {{ perm.user_id }}, '{{ perm.permission }}', {{ request.user.id }})">保存</button>
+				<button class="btn btn-sm btn-danger" onclick="form_delete({{ perm.id }}, {{ perm.user_id }}, {{ request.user.id }})">删除</button>
+			</td>
+		</tr>
+		{% endfor %}
+	</tbody>
+</table>
+
+<div class="d-none">
+	<form id="form" action="{% url 'serverlist:ftp' %}" method="post">
+		{% csrf_token %}
+		{{ form }}
+	</form>
+</div>
+
+<script>
+'use strict';
+
+var form = document.getElementById('form');
+
+function form_post(id) {
+	document.getElementById('id_action').value = 'post';
+	document.getElementById('id_path').value = document.getElementById('input-path').value;
+	document.getElementById('id_isdir').checked = document.getElementById('input-isdir').value == 'true';
+	form.submit();
+}
+
+function form_put(id, user_id_1, permission, user_id_2) {
+	var new_permission = document.getElementById('input-permission-' + id).value;
+	if (permission == 'admin' && new_permission != 'admin' && user_id_1 == user_id_2 && !confirm('修改自己的权限，确认吗？'))
+		return;
+	document.getElementById('id_action').value = 'put';
+	document.getElementById('id_id').value = id;
+	document.getElementById('id_permission').value = new_permission;
+	form.submit();
+}
+
+function form_delete(id, user_id_1, user_id_2) {
+	if (!confirm(user_id_1 == user_id_2 ? '删除自己的权限，确认吗？' : '删除权限，确认吗？'))
+		return;
+	document.getElementById('id_action').value = 'delete';
+	document.getElementById('id_id').value = id;
+	form.submit();
+}
+</script>
+
+{% endblock %}

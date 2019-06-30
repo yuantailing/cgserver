@@ -7,5 +7,14 @@ def islist(value):
     return isinstance(value, list)
 
 @register.simple_tag
-def oneq(x, y, yes, no):
+def eqorno(x, y, yes, no):
     return yes if x == y else no
+
+@register.filter
+def ftppermtrans(key):
+    return {
+        'none': 'No access',
+        'read': 'Read only',
+        'write': 'Read & write',
+        'admin': 'Admin'
+    }.get(key, 'Unknown')

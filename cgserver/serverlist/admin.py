@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import AccessLog, Client, ClientReport, Employee, GithubUser, UnknownReport
+from .models import AccessLog, Client, ClientReport, Employee, FtpPerm, GithubUser, UnknownReport
 from django.contrib.auth.models import User
 
 # Register your models here.
@@ -32,6 +32,11 @@ class EmployeeAdmin(admin.ModelAdmin):
     readonly_fields = (user_username, user_email, )
 
 
+class FtpPermAdmin(admin.ModelAdmin):
+    list_display = ('id', 'user', 'path', 'isdir', 'permission', )
+    list_filter = ('user', 'path', 'isdir', 'permission', )
+
+
 class GithubUserAdmin(admin.ModelAdmin):
     def user_username(inst):
         return inst.user.username
@@ -49,5 +54,6 @@ admin.site.register(AccessLog, AccessLogAdmin)
 admin.site.register(Client, ClientAdmin)
 admin.site.register(ClientReport, ClientReportAdmin)
 admin.site.register(Employee, EmployeeAdmin)
+admin.site.register(FtpPerm, FtpPermAdmin)
 admin.site.register(GithubUser, GithubUserAdmin)
 admin.site.register(UnknownReport, UnknownReportAdmin)
