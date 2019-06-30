@@ -25,7 +25,7 @@
 
 <hr>
 
-<h3>提供 4 种访问方式</h3>
+<h3>提供 3 种访问方式</h3>
 <h3>1. ssh</h3>
 <p>
 	服务器公钥指纹：<br>
@@ -56,13 +56,6 @@
   方法二、直接挂载：<code># mount -tnfs -orsize=8192,wsize=8192,intr nas.thucg.com:/ /path/to/mount</code><br>
   卸载命令：<code># umount /path/to/mount</code><br>
   挂载时建议加 intr 选项，以免网络断开后无法 umount<br>
-</p>
-
-<h3 class="text-muted">4. ftp（由于安全问题，尽量不要用 ftp）</h3>
-<p class="text-muted">
-	访问地址：<a href="ftp://nas.thucg.com/">ftp://nas.thucg.com/</a>，用户名密码与 ssh 相同<br>
-	你具有与 ssh 同等的访问权限，即可以写自己的 home 目录和 777 文件夹<br>
-	你可以在 Chrome 等浏览器里浏览，也可以在 Windows Explorer 里浏览和修改，也可以使用其它 FTP 客户端<br>
 </p>
 
 <h3>FAQ</h3>

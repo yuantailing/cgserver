@@ -53,6 +53,7 @@ class Employee(models.Model):
     shadow_password = models.CharField(max_length=255, blank=True)
     nt_password_hash = models.CharField(max_length=64, blank=True)
     password_updated_at = models.DateTimeField(default=datetime.datetime(2018, 1, 1))
+    ftp_insecure = models.BooleanField(db_index=True, default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -84,7 +85,7 @@ class FtpPerm(models.Model):
     def save(self, *args, **kwargs):
         if not FtpPerm.issimplepath(self.path):
             raise ValueError('not a simple path')
-        super().save(*args, **kwargs)
+        return super().save(*args, **kwargs)
 
 
 class GithubUser(models.Model):

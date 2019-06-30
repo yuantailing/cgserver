@@ -1,5 +1,5 @@
 {% extends "./base.html" %}
-{% load serverlisttags %}
+{% load static serverlisttags %}
 
 {% block content %}
 
@@ -15,21 +15,33 @@
 {% endif %}
 
 <h1 class="mb-4">FTP</h1>
-<h3>操作说明</h3>
-<ul>
-	<li>步骤一：用户添加路径 <i>path</i>，初始权限为 <code>{{ 'none'|ftppermtrans }}</code></li>
-	<li>步骤二：拥有 <i>path</i> 或 <i>path</i> 父目录的管理员将用户权限修改为 <code>{{ 'read'|ftppermtrans }}</code>、<code>{{ 'write'|ftppermtrans }}</code> 或 <code>{{ 'admin'|ftppermtrans }}</code></li>
-	<li>步骤三：使用完毕后，用户或管理员可以删除这条权限</li>
-</ul>
-<p>路径示例：<code>cscg/chinagraph2016</code>、<code>oslab/people/~zhangsan</code></p>
+<h3 class="mb-3">连接方式</h3>
+<p>服务器：cg.cs.tsinghua.edu.cn</p>
+<p>端口：21</p>
+{% if user.employee.ftp_insecure %}
+<p><img style="height: 1.4em;" src="{% static 'admin/img/icon-yes.svg' %}" alt="yes"> FTP：该帐号允许使用 FTP 协议登录</p>
+{% else %}
+<p><img style="height: 1.4em;" src="{% static 'admin/img/icon-no.svg' %}" alt="no"> FTP：默认禁止使用不安全的 FTP 协议登录，如另有需求可联系管理员</p>
+{% endif %}
+<p><img style="height: 1.4em;" src="{% static 'admin/img/icon-yes.svg' %}" alt="yes"> FTPS：可以使用 FTPS 客户端，登录时请检查服务器的安全证书</p>
 
-<h3 class="mb-3">我申请的路径</h3>
+<h3 class="mt-5">授权说明</h3>
+<ul>
+	<li>步骤一：用户添加路径（<i>path</i>），初始权限为 <code>{{ 'none'|ftppermtrans }}</code></li>
+	<li>步骤二：拥有 <i>path</i> 或 <i>path</i> 父目录的管理员可将用户权限修改为 <code>{{ 'read'|ftppermtrans }}</code>、<code>{{ 'write'|ftppermtrans }}</code> 或 <code>{{ 'admin'|ftppermtrans }}</code></li>
+	<li>步骤三：使用完毕后，用户和管理员可以删除这条权限</li>
+</ul>
+<p>路径示例：<code>cscg/chinagraph2016</code>、<code>oslab/people/~zhangsan</code><br>
+<code>cscg/*</code> 对应 <a href="https://cg.cs.tsinghua.edu.cn/">cg.cs.tsinghua.edu.cn/*</a>，<code>oslab/*</code> 对应 <a href="https://oslab.cs.tsinghua.edu.cn/">oslab.cs.tsinghua.edu.cn/*</a><br>
+权限更改后，下一次登录 FTP 时生效</p>
+
+<h3 class="mt-5 mb-3">我申请的路径</h3>
 <table class="table table-sm table-hover">
 	<thead>
 		<tr>
 			<th>#</th>
 			<th>路径</th>
-			<th>类型</th>
+			<th>授权范围</th>
 			<th>权限</th>
 			<th>操作</th>
 		</tr>
@@ -59,14 +71,14 @@
 	</tbody>
 </table>
 
-<h3 class="mb-3">我管理的路径</h3>
+<h3 class="mt-5 mb-3">我管理的路径</h3>
 <table class="table table-sm table-hover">
 	<thead>
 		<tr>
 			<th>#</th>
 			<th>用户名</th>
 			<th>路径</th>
-			<th>类型</th>
+			<th>授权范围</th>
 			<th>权限</th>
 			<th>操作</th>
 		</tr>

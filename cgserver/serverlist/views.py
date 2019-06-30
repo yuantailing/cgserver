@@ -493,6 +493,23 @@ def ftpauth(request):
     return JsonResponse(res, json_dumps_params={'sort_keys': True})
 
 @csrf_exempt
+def ftpinsecurecheck(request):
+    username = request.POST.get('username')
+    client_secret = request.POST.get('client_secret')
+    if client_secret != settings.FTP_CLIENT_SECRET:
+        return HttpResponseBadRequest('ftp client secret error')
+    user = User.objects.filter(username=username).first()
+    if not user:
+        res = {'error': 1, 'msg': 'no such user'}
+    elif not hasattr(user, 'employee') or not user.employee.can_access:
+        res = {'error': 3, 'msg': 'no access'}
+    elif not user.employee.ftp_insecure:
+        res = {'error': 4, 'msg': 'ftp protocol prohibited'}
+    else:
+        res = {'error': 0, 'msg': 'ftp protocol allowed'}
+    return JsonResponse(res, json_dumps_params={'sort_keys': True})
+
+@csrf_exempt
 def cgnas_api(request):
     api_secret = request.POST.get('api_secret')
     if api_secret != settings.CGNAS_API_SECRET:
