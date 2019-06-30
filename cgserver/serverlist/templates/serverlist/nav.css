@@ -1,3 +1,34 @@
+@media (max-width: 991.98px) {
+  .bd-navbar {
+    padding-right: .5rem;
+    padding-left: .5rem;
+  }
+  .bd-navbar .navbar-nav-scroll {
+    max-width: 100%;
+    height: 2.5rem;
+    margin-top: .25rem;
+    overflow: hidden;
+  }
+  .bd-navbar .navbar-nav-scroll .navbar-nav {
+    padding-bottom: 2rem;
+    overflow-x: auto;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+.bd-navbar .navbar-nav .nav-link {
+    padding-right: .5rem;
+    padding-left: .5rem;
+    color: rgba(255,255,255,.6);
+}
+
 .bd-navbar .navbar-nav .nav-link.active {
   font-weight: 600;
+}
+
+@media (pointer:coarse) {
+  .mobile-scroll {
+    overflow-x: scroll;
+  }
 }

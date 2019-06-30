@@ -1,14 +1,14 @@
 {% load static %}
 {% load serverlisttags %}
 <header class="navbar navbar-expand navbar-dark flex-column flex-md-row bd-navbar" style="background-color: #743481;">
-	<a class="navbar-brand mr-0 mr-md-2" href="{% url 'serverlist:index' %}">CSCG</a>
+	<a class="navbar-brand d-none d-md-block mr-0 mr-md-2" href="{% url 'serverlist:index' %}">CSCG</a>
 	<div class="navbar-nav-scroll">
-		<ul class="navbar-nav bd-navbar-nav flex-row">
-			{% if user.employee.can_access %}
+		<ul class="navbar-nav">
 			<li class="nav-item"><a class="nav-link{% oneq request.resolver_match.url_name 'index'    ' active' '' %}" href="{% url 'serverlist:index' %}">ServerList</a></li>
+			{% if user.employee.can_access %}
 			<li class="nav-item"><a class="nav-link{% oneq request.resolver_match.url_name 'vpn'      ' active' '' %}" href="{% url 'serverlist:vpn' %}">OpenVPN</a></li>
-			<li class="nav-item"><a class="nav-link{% oneq request.resolver_match.url_name 'pptp'     ' active' '' %}" href="{% url 'serverlist:pptp' %}">PPTP/L2TP</a></li>
-			<li class="nav-item"><a class="nav-link{% oneq request.resolver_match.url_name 'nas'      ' active' '' %}" href="{% url 'serverlist:nas' %}">NAStorage</a></li>
+			<li class="nav-item"><a class="nav-link{% oneq request.resolver_match.url_name 'pptp'     ' active' '' %}" href="{% url 'serverlist:pptp' %}">PPTP</a></li>
+			<li class="nav-item"><a class="nav-link{% oneq request.resolver_match.url_name 'nas'      ' active' '' %}" href="{% url 'serverlist:nas' %}">NAS</a></li>
 			<li class="nav-item"><a class="nav-link{% oneq request.resolver_match.url_name 'download' ' active' '' %}" href="{% url 'serverlist:download' %}">Download</a></li>
 			{% endif %}
 		</ul>

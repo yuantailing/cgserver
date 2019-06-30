@@ -13,49 +13,51 @@ table td {
 
 {% block container %}
 <div class="container-flex mt-4 mb-5">
-	<h1 class="ml-2 ml-md-4 mb-4">服务器列表</h1>
-	<table class="table table-sm">
-		<thead>
-			<tr>
-				<th>Client</th>
-				<th>Platform</th>
-				<th>IP/MAC</th>
-				<th>CPU</th>
-				<th>loadavg</th>
-				<th>内存</th>
-				<th>磁盘</th>
-				<th>显卡</th>
-				<th>显存</th>
-				<th>GPU-Util</th>
-				<th>在线用户</th>
-				<th>uptime</th>
-				<th>数据更新</th>
-				<th>管理员</th>
-				<th>更多信息</th>
-				<th>图表</th>
-				<th>详细</th>
-			</tr>
-		</thead>
-		<tbody>
-			{% for tr in table %}
-			<tr>
-				{% for td in tr.tr %}
-				<td>
-					{% if td|islist %}
-						{% for line in td %}
-							{{ line }}<br>
-						{% endfor %}
-					{% else %}
-						{{ td }}
-					{% endif %}
-				</td>
+	<h1 class="ml-3 ml-md-4 mb-4">服务器列表</h1>
+	<div class="w-100 mobile-scroll">
+		<table class="table table-sm table-hover ml-2 mr-2">
+			<thead>
+				<tr>
+					<th>Client</th>
+					<th>Platform</th>
+					<th>IP/MAC</th>
+					<th>CPU</th>
+					<th>loadavg</th>
+					<th>内存</th>
+					<th>磁盘</th>
+					<th>显卡</th>
+					<th>显存</th>
+					<th>GPU-Util</th>
+					<th>在线用户</th>
+					<th>uptime</th>
+					<th>数据更新</th>
+					<th>管理员</th>
+					<th>更多信息</th>
+					<th>图表</th>
+					<th>详细</th>
+				</tr>
+			</thead>
+			<tbody>
+				{% for tr in table %}
+				<tr>
+					{% for td in tr.tr %}
+					<td>
+						{% if td|islist %}
+							{% for line in td %}
+								{{ line }}<br>
+							{% endfor %}
+						{% else %}
+							{{ td }}
+						{% endif %}
+					</td>
+					{% endfor %}
+					<td><a href="{% url 'serverlist:clientchart' tr.client.pk %}">图表</a></td>
+					<td><a href="{% url 'serverlist:client' tr.client.pk %}">详细</a></td>
+				</tr>
 				{% endfor %}
-				<td><a href="{% url 'serverlist:clientchart' tr.client.pk %}">图表</a></td>
-				<td><a href="{% url 'serverlist:client' tr.client.pk %}">详细</a></td>
-			</tr>
-			{% endfor %}
-		<tbody>
-	</table>
+			<tbody>
+		</table>
+	</div>
 	<p>使用服务器联系管理员，信息错误联系袁泰凌。</p>
 </div>
 {% endblock %}

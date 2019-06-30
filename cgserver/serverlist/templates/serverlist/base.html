@@ -3,10 +3,9 @@
 	<head>
 		<meta charset="UTF-8">
 		<title>{% block title %}CG Server{% endblock %}</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 		{% block head %}{% endblock %}
 		<link href="{% static 'serverlist/bootstrap.min.css' %}" rel="stylesheet">
-		<script src="{% static 'serverlist/jquery-3.3.1.slim.min.js' %}"></script>
-		<script src="{% static 'serverlist/bootstrap.min.js' %}"></script>
 		<style>{% include "./nav.css" %}</style>
 	</head>
 	<body>
@@ -17,5 +16,7 @@
 		</div>
 		{% endblock %}
 		{% include "./footer.html" %}
+		<script src="{% static 'serverlist/jquery-3.3.1.slim.min.js' %}"></script>
+		<script src="{% static 'serverlist/bootstrap.min.js' %}"></script>
 	</body>
 </html>
