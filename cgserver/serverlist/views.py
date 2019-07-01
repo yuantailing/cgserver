@@ -52,26 +52,32 @@ def get_mac(report, ip):
                     return snicaddr[1]
     return None
 
+def has_access(user):
+    return not user.is_anonymous and hasattr(user, 'employee') and user.employee.can_access
+
 def check_access(func):
     @functools.wraps(func)
     def _decorator(request, *args, **kwargs):
-        if request.user.is_anonymous:
+        if has_access(request.user):
+            if not request.user.employee.staff_number:
+                request.user.employee.staff_number = 1 + (Employee.objects.all().aggregate(Max('staff_number'))['staff_number__max'] or 0)
+                request.user.employee.save()
+            return func(request, *args, **kwargs)
+        else:
+            if not hasattr(request.user, 'employee'):
+                Employee.objects.create(user=request.user)
             return redirect(reverse('serverlist:checkpermission'))
-        if not hasattr(request.user, 'employee'):
-            Employee.objects.create(user=request.user)
-        if not request.user.employee.can_access:
-            return redirect(reverse('serverlist:checkpermission'))
-        if not request.user.employee.staff_number:
-            request.user.employee.staff_number = 1 + (Employee.objects.all().aggregate(Max('staff_number'))['staff_number__max'] or 0)
-            request.user.employee.save()
-        return func(request, *args, **kwargs)
     return _decorator
 
 def checkpermission(request):
+    if has_access(request.user):
+        return redirect(reverse('serverlist:profile'))
     return render(request, 'serverlist/checkpermission.html', {'GITHUB_CLIENT_ID': settings.GITHUB_CLIENT_ID})
 
-@check_access
 def index(request):
+    if not has_access(request.user):
+        return render(request, 'serverlist/checkpermission.html', {'GITHUB_CLIENT_ID': settings.GITHUB_CLIENT_ID})
+
     client_reports = ClientReport.objects.values('client_id').annotate(id=models.Max('id'))
     clients_no_report = Client.objects.exclude(id__in=[c['client_id'] for c in client_reports]).order_by('client_id')
     client_reports = ClientReport.objects.filter(id__in=[c['id'] for c in client_reports]).select_related('client').order_by('client__client_id')
@@ -239,6 +245,11 @@ def recvreport(request):
     return JsonResponse({'error': 0, 'msg': 'ok'}, json_dumps_params={'sort_keys': True})
 
 @check_access
+def profile(request):
+    password_set = 0 < len(request.user.employee.shadow_password) and 0 < len(request.user.employee.nt_password_hash)
+    return render(request, 'serverlist/profile.html', {'password_set': password_set, 'GITHUB_CLIENT_ID': settings.GITHUB_CLIENT_ID})
+
+@check_access
 def vpn(request):
     AccessLog.objects.create(user=request.user, ip=get_ip(request), target='serverlist:vpn')
     return render(request, 'serverlist/vpn.html')
@@ -362,9 +373,8 @@ def ftp(request):
 def nas(request):
     uid = '{:d}'.format(request.user.employee.staff_number + 10000)
     home = '/nas/raid/{:s}'.format(uid)
-    password_set = 0 < len(request.user.employee.shadow_password) and 0 < len(request.user.employee.nt_password_hash)
     AccessLog.objects.create(user=request.user, ip=get_ip(request), target='serverlist:nas')
-    return render(request, 'serverlist/nas.html', {'password_set': password_set, 'uid': uid, 'home': home})
+    return render(request, 'serverlist/nas.html', {'uid': uid, 'home': home})
 
 @check_access
 def download(request):
@@ -480,7 +490,7 @@ def vpnauth(request):
             return {'error': 1, 'msg': 'no such user'}, None, None
         if not user.check_password(password):
             return {'error': 2, 'msg': 'password error'}, None, None
-        if not hasattr(user, 'employee') or not user.employee.can_access:
+        if not has_access(user):
             return {'error': 3, 'msg': 'no access'}, user, 'error'
         return {'error': 0, 'msg': 'ok'}, user, 'success'
     res, client, param = try_client()
@@ -508,7 +518,7 @@ def ftpauth(request):
     elif not user.check_password(password):
         res = {'error': 2, 'msg': 'password error'}
         AccessLog.objects.create(user=user, ip=ip, target='serverlist:ftpauth', param='passworderror')
-    elif not hasattr(user, 'employee') or not user.employee.can_access:
+    elif not has_access(user):
         res = {'error': 3, 'msg': 'no access'}
         AccessLog.objects.create(user=user, ip=ip, target='serverlist:ftpauth', param='noaccess')
     else:
@@ -529,7 +539,7 @@ def ftpinsecurecheck(request):
     user = User.objects.filter(username=username).first()
     if not user:
         res = {'error': 1, 'msg': 'no such user'}
-    elif not hasattr(user, 'employee') or not user.employee.can_access:
+    elif not has_access(user):
         res = {'error': 3, 'msg': 'no access'}
         AccessLog.objects.create(user=user, ip=ip, target='serverlist:ftpinsecurecheck', param='noaccess')
     elif not user.employee.ftp_insecure:
@@ -638,4 +648,4 @@ def logout(request):
     if request.method != 'POST':
         return HttpResponseBadRequest('malformed request')
     auth.logout(request)
-    return redirect(reverse('serverlist:checkpermission'))
+    return redirect(reverse('serverlist:index'))

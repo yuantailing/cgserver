@@ -3,16 +3,14 @@
 
 {% block content %}
 <h1 class="mb-4">OpenVPN</h1>
-<p>配置文件：<a href="{% static 'serverlist/cscg.ovpn' %}">点击下载</a></p>
+<p><b>配置文件：</b><a href="{% static 'serverlist/cscg.ovpn' %}">点击下载</a></p>
 <p>
-	下载软件：
+	<b>下载软件：</b>
 	<a href="https://openvpn.net/community-downloads/">官方网站</a>
 	|
 	镜像下载 <a href="http://open-access.oss-cn-beijing.aliyuncs.com/Downloads/openvpn-install-2.4.7-I603.exe">openvpn-install-2.4.7-I603.exe</a>（仅 Windows 7 以上可用）
 </p>
-<p><b>Username:</b> <span>{{ user.username }}</span> | <a href="{% url 'serverlist:resetpassword' %}">change username</a></p>
-<p><b>Password:</b> *** (don't use GitHub password) | <a href="{% url 'serverlist:resetpassword' %}">reset password</a></p>
-<p><b>Password updated at:</b> {{ user.employee.password_updated_at | date:'Y-m-d H:i:s' }}</p>
+<p><b>帐号：</b>使用本网站的<a href="{% url 'serverlist:profile' %}">用户名和密码</a></p>
 <hr>
 
 <h3>FAQ</h3>

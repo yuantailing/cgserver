@@ -1,0 +1,16 @@
+{% extends "./base.html" %}
+{% load static %}
+{% block title %}Account status{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">Profile</h1>
+<p><b>Username:</b> <span>{{ user.username }}</span> | <a href="{% url 'serverlist:resetpassword' %}">change username</a></p>
+<p><b>Email:</b> <span>{{ user.email }}</span></p>
+{% if password_set %}
+<p><b>Password:</b> *** (don't use GitHub password) | <a href="{% url 'serverlist:resetpassword' %}">reset password</a></p>
+<p><b>Password updated at:</b> {{ user.employee.password_updated_at | date:'Y-m-d H:i:s' }}</p>
+{% else %}
+<p><b>Password:</b> <i style="color: red">has not been set</i> | <a href="{% url 'serverlist:resetpassword' %}">reset password</a></p>
+{% endif %}
+<p>Revoke your GitHub authorization? Click <a href="https://github.com/settings/connections/applications/{{ GITHUB_CLIENT_ID }}">here</a>.</p>
+{% endblock %}

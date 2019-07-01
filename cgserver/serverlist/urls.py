@@ -11,6 +11,7 @@ urlpatterns = [
     path('client/<int:pk>/chart', views.clientchart, name='clientchart'),
     path('client/<int:client_id>/report/<int:report_id>', views.clientreport, name='clientreport'),
     path('clientreport', views.recvreport),
+    path('profile', views.profile, name='profile'),
     path('vpn', views.vpn, name='vpn'),
     path('pptp', views.pptp, name='pptp'),
     path('ftp', views.ftp, name='ftp'),

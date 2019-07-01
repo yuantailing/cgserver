@@ -3,20 +3,15 @@
 
 {% block content %}
 <h1 class="mb-4">存储空间（Network Attached Storage）</h1>
-<p><b>Hostname:</b> <a href="http://nas.thucg.com/">nas.thucg.com</a></p>
-<p><b>Username:</b> <span>{{ user.username }}</span> | <a href="{% url 'serverlist:resetpassword' %}">change username</a></p>
-{% if password_set %}
-<p><b>Password:</b> *** (don't use GitHub password) | <a href="{% url 'serverlist:resetpassword' %}">reset password</a></p>
-<p><b>Password updated at:</b> {{ user.employee.password_updated_at | date:'Y-m-d H:i:s' }}</p>
-{% else %}
-<p><b>Password:</b> <i style="color: red">has not been set</i> | <a href="{% url 'serverlist:resetpassword' %}">reset password</a></p>
-{% endif %}
+<p><b>服务器：</b> <a href="http://nas.thucg.com/">nas.thucg.com</a></p>
+<p><b>帐号：</b>使用本网站的<a href="{% url 'serverlist:profile' %}">用户名和密码</a></p>
 <p><b>UID:</b> {{ uid }}</p>
 <p>
-	<b>Your directories:</b>
+	<b>个人目录:</b>
 	<br>
 	<ul>
-		<li>/nas/raid/{{ uid }} (<b>your home</b>, RAID6) 存放存档数据</li>
+		<li>/home/{{ user.username }} (软链接，指向 {{ home }})</li>
+		<li>{{ home }} (<b>home 目录</b>，RAID6) 存放存档数据</li>
 		<li>/nas/disk-0/{{ uid }} (non-RAID) 暂时存放高频读写数据</li>
 		<li>/nas/disk-1/{{ uid }} (non-RAID) 暂时存放高频读写数据</li>
 	</ul>
