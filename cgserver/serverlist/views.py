@@ -546,10 +546,10 @@ def ftpinsecurecheck(request):
         AccessLog.objects.create(user=user, ip=ip, target='serverlist:ftpinsecurecheck', param='noaccess')
     elif not user.employee.ftp_insecure:
         res = {'error': 4, 'msg': 'ftp protocol prohibited'}
-        AccessLog.objects.create(user=user, ip=ip, target='serverlist:ftpinsecurecheck', param='ftpprohibited')
+        AccessLog.objects.create(user=user, ip=ip, target='serverlist:ftpinsecurecheck', param='prohibited')
     else:
         res = {'error': 0, 'msg': 'ftp protocol allowed'}
-        AccessLog.objects.create(user=user, ip=ip, target='serverlist:ftpinsecurecheck', param='ftpallowed')
+        AccessLog.objects.create(user=user, ip=ip, target='serverlist:ftpinsecurecheck', param='allowed')
     return JsonResponse(res, json_dumps_params={'sort_keys': True})
 
 @csrf_exempt

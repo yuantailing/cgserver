@@ -63,7 +63,7 @@
 		{% endfor %}
 		<tr>
 			<td></td>
-			<td><input class="form-control form-control-sm" id="input-path" placeholder="Please input a path"></td>
+			<td><input class="form-control form-control-sm" type="text" name="path" id="input-path" placeholder="Please input a path"></td>
 			<td>
 				<select class="form-control form-control-sm" id="input-isdir">
 					<option value="true">目录和子目录</option>
@@ -112,8 +112,8 @@
 		{% if managedperms %}
 		<tr>
 			<td></td>
-			<td><input class="form-control form-control-sm" id="input-admin-username" placeholder="Username"></td>
-			<td><input class="form-control form-control-sm" id="input-admin-path" placeholder="Please input a path"></td>
+			<td><input class="form-control form-control-sm" type="text" name="username" id="input-admin-username" placeholder="Username"></td>
+			<td><input class="form-control form-control-sm" type="text" name="path" id="input-admin-path" placeholder="Please input a path"></td>
 			<td>
 				<select class="form-control form-control-sm" id="input-admin-isdir">
 					<option value="true">目录和子目录</option>
