@@ -18,12 +18,13 @@
 <h3 class="mb-3">连接方式</h3>
 <p>服务器：cg.cs.tsinghua.edu.cn</p>
 <p>端口：21</p>
+<p>帐号：本网站的用户名、密码</p>
 {% if user.employee.ftp_insecure %}
 <p><img style="height: 1.4em;" src="{% static 'admin/img/icon-yes.svg' %}" alt="yes"> FTP：该帐号允许使用 FTP 协议登录</p>
 {% else %}
 <p><img style="height: 1.4em;" src="{% static 'admin/img/icon-no.svg' %}" alt="no"> FTP：默认禁止使用不安全的 FTP 协议登录，如另有需求可联系管理员</p>
 {% endif %}
-<p><img style="height: 1.4em;" src="{% static 'admin/img/icon-yes.svg' %}" alt="yes"> FTPS：可以使用 FTPS 客户端，登录时请检查服务器的安全证书</p>
+<p><img style="height: 1.4em;" src="{% static 'admin/img/icon-yes.svg' %}" alt="yes"> FTPS：可使用支持 FTPS 的客户端（例如 <a href="https://winscp.net/">WinSCP</a>、<a href="https://filezilla-project.org/">FileZilla</a>），登录时请检查服务器的安全证书</p>
 
 <h3 class="mt-5">授权说明</h3>
 <ul>
@@ -31,9 +32,13 @@
 	<li>步骤二：拥有 <i>path</i> 或 <i>path</i> 父目录的管理员可将用户权限修改为 <code>{{ 'read'|ftppermtrans }}</code>、<code>{{ 'write'|ftppermtrans }}</code> 或 <code>{{ 'admin'|ftppermtrans }}</code></li>
 	<li>步骤三：使用完毕后，用户和管理员可以删除这条权限</li>
 </ul>
-<p>路径示例：<code>cscg/chinagraph2016</code>、<code>oslab/people/~zhangsan</code><br>
-<code>cscg/*</code> 对应 <a href="https://cg.cs.tsinghua.edu.cn/">cg.cs.tsinghua.edu.cn/*</a>，<code>oslab/*</code> 对应 <a href="https://oslab.cs.tsinghua.edu.cn/">oslab.cs.tsinghua.edu.cn/*</a><br>
-权限更改后，下一次登录 FTP 时生效</p>
+<p>权限更改后，下一次登录 FTP 时生效</p>
+
+<h3 class="mt-5">FTP 与主页的对应关系</h3>
+<p>
+	<code>cscg/*</code> 对应 CG 主页，例如路径 <code>cscg/poseshop</code> 对应 <a href="https://cg.cs.tsinghua.edu.cn/chinagraph2016/">cg.cs.tsinghua.edu.cn/poseshop/</a><br>
+	<code>oslab/*</code> 对应 OSLab 主页，例如路径 <code>oslab/people/~zhangsan</code> 对应 <a href="https://oslab.cs.tsinghua.edu.cn/people/~zhangsan/">oslab.cs.tsinghua.edu.cn/people/~zhangsan/</a><br>
+</p>
 
 <h3 class="mt-5 mb-3">我申请的路径</h3>
 <table class="table table-sm table-hover">
@@ -53,7 +58,7 @@
 			<td>{% if perm.path != '' %}{{ perm.path }}{% else %}<span class="text-success">[根目录]</span>{% endif %}</td>
 			<td>{% if perm.isdir %}目录和子目录{% else %}单个文件{% endif %}</td>
 			<td>{{ perm.permission|ftppermtrans }}</td>
-			<td><button class="btn btn-sm btn-danger" onclick="form_delete({{ perm.id }}, {{ perm.user_id }}, {{ request.user.id }})">删除</button></td>
+			<td><button class="btn btn-sm btn-danger" onclick="form_delete({{ perm.id }}, {{ perm.user_id }}, '{{ perm.permission }}', {{ request.user.id }})">删除</button></td>
 		</tr>
 		{% endfor %}
 		<tr>
@@ -66,7 +71,7 @@
 				</select>
 			</td>
 			<td>No access</td>
-			<td><button class="btn btn-sm btn-success" onclick="form_post({{ perm.id }})">添加</button></td>
+			<td><button class="btn btn-sm btn-success" onclick="form_post()">添加</button></td>
 		</tr>
 	</tbody>
 </table>
@@ -100,10 +105,32 @@
 			</td>
 			<td>
 				<button class="btn btn-sm btn-primary" onclick="form_put({{ perm.id }}, {{ perm.user_id }}, '{{ perm.permission }}', {{ request.user.id }})">保存</button>
-				<button class="btn btn-sm btn-danger" onclick="form_delete({{ perm.id }}, {{ perm.user_id }}, {{ request.user.id }})">删除</button>
+				<button class="btn btn-sm btn-danger" onclick="form_delete({{ perm.id }}, {{ perm.user_id }}, '{{ perm.permission }}', {{ request.user.id }})">删除</button>
 			</td>
 		</tr>
 		{% endfor %}
+		{% if managedperms %}
+		<tr>
+			<td></td>
+			<td><input class="form-control form-control-sm" id="input-admin-username" placeholder="Username"></td>
+			<td><input class="form-control form-control-sm" id="input-admin-path" placeholder="Please input a path"></td>
+			<td>
+				<select class="form-control form-control-sm" id="input-admin-isdir">
+					<option value="true">目录和子目录</option>
+					<option value="false">单个文件</option>
+				</select>
+			</td>
+			<td>
+				<select class="form-control form-control-sm" id="input-admin-permission">
+					<option value="none"  {% eqorno perm.permission 'none'  'selected' '' %}>None</option>
+					<option value="read"  {% eqorno perm.permission 'read'  'selected' '' %}>Read only</option>
+					<option value="write" {% eqorno perm.permission 'write' 'selected' '' %}>Read &amp; Write</option>
+					<option value="admin" {% eqorno perm.permission 'admin' 'selected' '' %}>Admin</option>
+				</select>
+			</td>
+			<td><button class="btn btn-sm btn-success" onclick="form_post_admin()">添加</button></td>
+		</tr>
+		{% endif %}
 	</tbody>
 </table>
 
@@ -119,10 +146,19 @@
 
 var form = document.getElementById('form');
 
-function form_post(id) {
+function form_post() {
 	document.getElementById('id_action').value = 'post';
 	document.getElementById('id_path').value = document.getElementById('input-path').value;
 	document.getElementById('id_isdir').checked = document.getElementById('input-isdir').value == 'true';
+	form.submit();
+}
+
+function form_post_admin() {
+	document.getElementById('id_action').value = 'post-admin';
+	document.getElementById('id_username').value = document.getElementById('input-admin-username').value;
+	document.getElementById('id_path').value = document.getElementById('input-admin-path').value;
+	document.getElementById('id_isdir').checked = document.getElementById('input-admin-isdir').value == 'true';
+	document.getElementById('id_permission').value = document.getElementById('input-admin-permission').value;
 	form.submit();
 }
 
@@ -136,8 +172,8 @@ function form_put(id, user_id_1, permission, user_id_2) {
 	form.submit();
 }
 
-function form_delete(id, user_id_1, user_id_2) {
-	if (!confirm(user_id_1 == user_id_2 ? '删除自己的权限，确认吗？' : '删除权限，确认吗？'))
+function form_delete(id, user_id_1, permission, user_id_2) {
+	if (permission != 'none' && !confirm(user_id_1 == user_id_2 ? '删除自己的权限，确认吗？' : '删除权限，确认吗？'))
 		return;
 	document.getElementById('id_action').value = 'delete';
 	document.getElementById('id_id').value = id;

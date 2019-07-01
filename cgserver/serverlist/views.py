@@ -276,8 +276,8 @@ def ftp(request):
             if action == 'post':
                 path = form.cleaned_data.get('path')
                 isdir = form.cleaned_data.get('isdir')
-                path = path.replace('\\', '/').strip('/')
                 if isdir is not None:
+                    path = path.replace('\\', '/').strip('/')
                     if path == '':
                         messages.warning(request, '不允许自助申请根目录权限')
                     elif not FtpPerm.issimplepath(path):
@@ -287,6 +287,29 @@ def ftp(request):
                     else:
                         ftpperm = FtpPerm.objects.create(user=request.user, path=path, isdir=isdir, permission='none')
                         AccessLog.objects.create(user=request.user, ip=get_ip(request), target='serverlist:ftp', param='post', info=json.dumps({'id': ftpperm.id, 'path': path, 'isdir': isdir}, sort_keys=True))
+                    bad = False
+            if action == 'post-admin':
+                username = form.cleaned_data.get('username')
+                path = form.cleaned_data.get('path')
+                isdir = form.cleaned_data.get('isdir')
+                permission = form.cleaned_data.get('permission')
+                if isdir is not None and FtpPerm.permission_in_choices(permission):
+                    path = path.replace('\\', '/').strip('/')
+                    user = User.objects.filter(username=username).first()
+                    if not user:
+                        messages.warning(request, '用户名不存在')
+                    elif path == '':
+                        messages.warning(request, '不允许自助添加根目录权限')
+                    elif not FtpPerm.issimplepath(path):
+                        messages.warning(request, '路径不合法，可能是因为有特殊字符或“..”')
+                    elif not isadmin(path, isdir):
+                        messages.warning(request, '没有此目录权限')
+                    elif FtpPerm.objects.filter(user=user, path=path).exists():
+                        messages.warning(request, '该路径已存在，请勿重复添加：{path}'.format(path=path))
+                    else:
+                        ftpperm = FtpPerm.objects.create(user=user, path=path, isdir=isdir, permission=permission)
+                        AccessLog.objects.create(user=request.user, ip=get_ip(request), target='serverlist:ftp', param='post-admin',
+                                info=json.dumps({'id': ftpperm.id, 'username': username, 'path': path, 'isdir': isdir, 'permission': permission}, sort_keys=True))
                     bad = False
             elif action == 'put':
                 id = form.cleaned_data.get('id')
@@ -333,7 +356,7 @@ def ftp(request):
         )
     )
     AccessLog.objects.create(user=request.user, ip=get_ip(request), target='serverlist:ftp')
-    return render(request, 'serverlist/ftp.html', {'myperms': myperms, 'managedperms': managedperms, 'form': FtpForm()})
+    return render(request, 'serverlist/ftp.html', {'myperms': myperms, 'managedperms': list(managedperms), 'form': FtpForm()})
 
 @check_access
 def nas(request):
@@ -476,6 +499,7 @@ def ftpauth(request):
     username = request.POST.get('username')
     password = request.POST.get('password')
     client_secret = request.POST.get('client_secret')
+    ip = request.POST.get('peerip', '')
     if client_secret != settings.FTP_CLIENT_SECRET:
         return HttpResponseBadRequest('ftp client secret error')
     user = User.objects.filter(username=username).first()
@@ -483,19 +507,23 @@ def ftpauth(request):
         res = {'error': 1, 'msg': 'no such user'}
     elif not user.check_password(password):
         res = {'error': 2, 'msg': 'password error'}
+        AccessLog.objects.create(user=user, ip=ip, target='serverlist:ftpauth', param='passworderror')
     elif not hasattr(user, 'employee') or not user.employee.can_access:
         res = {'error': 3, 'msg': 'no access'}
+        AccessLog.objects.create(user=user, ip=ip, target='serverlist:ftpauth', param='noaccess')
     else:
         perms = {}
         for perm in user.ftpperm_set.exclude(permission='none'):
             perms[perm.path] = ['w' if perm.permission in ('write', 'admin') else 'r', perm.isdir]
         res = {'error': 0, 'msg': 'ok', 'perms': perms}
+        AccessLog.objects.create(user=user, ip=ip, target='serverlist:ftpauth', param='success')
     return JsonResponse(res, json_dumps_params={'sort_keys': True})
 
 @csrf_exempt
 def ftpinsecurecheck(request):
     username = request.POST.get('username')
     client_secret = request.POST.get('client_secret')
+    ip = request.POST.get('peerip', '')
     if client_secret != settings.FTP_CLIENT_SECRET:
         return HttpResponseBadRequest('ftp client secret error')
     user = User.objects.filter(username=username).first()
@@ -503,10 +531,13 @@ def ftpinsecurecheck(request):
         res = {'error': 1, 'msg': 'no such user'}
     elif not hasattr(user, 'employee') or not user.employee.can_access:
         res = {'error': 3, 'msg': 'no access'}
+        AccessLog.objects.create(user=user, ip=ip, target='serverlist:ftpinsecurecheck', param='noaccess')
     elif not user.employee.ftp_insecure:
         res = {'error': 4, 'msg': 'ftp protocol prohibited'}
+        AccessLog.objects.create(user=user, ip=ip, target='serverlist:ftpinsecurecheck', param='ftpprohibited')
     else:
         res = {'error': 0, 'msg': 'ftp protocol allowed'}
+        AccessLog.objects.create(user=user, ip=ip, target='serverlist:ftpinsecurecheck', param='ftpallowed')
     return JsonResponse(res, json_dumps_params={'sort_keys': True})
 
 @csrf_exempt

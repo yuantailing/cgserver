@@ -43,6 +43,7 @@ class ResetPasswordForm(forms.Form):
 class FtpForm(forms.Form):
     action = forms.CharField()
     id = forms.IntegerField(required=False)
+    username = forms.CharField(required=False)
     path = forms.CharField(required=False)
     isdir = forms.BooleanField(required=False)
     permission = forms.CharField(required=False)

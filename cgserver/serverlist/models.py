@@ -65,7 +65,7 @@ class FtpPerm(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     path = models.CharField(max_length=255, db_index=True, blank=True, default=None)
     isdir = models.BooleanField(db_index=True, default=None)
-    permission = models.CharField(max_length=64, db_index=True, default=None, choices=((p, p) for p in ['none', 'read', 'write', 'admin']))
+    permission = models.CharField(max_length=64, db_index=True, default=None, choices=((perm, perm) for perm in ['none', 'read', 'write', 'admin']))
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -82,9 +82,19 @@ class FtpPerm(models.Model):
         realpath = os.path.realpath(os.path.join(basedir, path))
         return realpath[:len(basedir) + 1] == basedir + os.sep and realpath[len(basedir) + 1:].replace(os.sep, '/') == path
 
+    @staticmethod
+    def permission_in_choices(permission):
+        choices = FtpPerm._meta.get_field('permission').choices
+        for choice, _ in choices:
+            if permission == choice:
+                return True
+        return False
+
     def save(self, *args, **kwargs):
         if not FtpPerm.issimplepath(self.path):
             raise ValueError('not a simple path')
+        if not FtpPerm.permission_in_choices(self.permission):
+            raise ValueError('permision not in choices')
         return super().save(*args, **kwargs)
 
 

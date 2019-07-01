@@ -27,8 +27,8 @@ class EmployeeAdmin(admin.ModelAdmin):
     def user_email(inst):
         return inst.user.email
 
-    list_display = ('user_id', user_username, user_email, 'can_access', 'staff_number', )
-    list_filter = ('can_access', )
+    list_display = ('user_id', user_username, user_email, 'can_access', 'staff_number', 'ftp_insecure', )
+    list_filter = ('can_access', 'ftp_insecure', )
     readonly_fields = (user_username, user_email, )
 
 
