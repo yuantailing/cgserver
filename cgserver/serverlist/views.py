@@ -64,7 +64,9 @@ def check_access(func):
                 request.user.employee.save()
             return func(request, *args, **kwargs)
         else:
-            if not hasattr(request.user, 'employee'):
+            if request.user.is_anonymous:
+                pass
+            elif not hasattr(request.user, 'employee'):
                 Employee.objects.create(user=request.user)
             return redirect(reverse('serverlist:checkpermission'))
     return _decorator
