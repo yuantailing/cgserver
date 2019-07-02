@@ -73,7 +73,7 @@ def check_access(func):
 
 def index(request):
     if request.user.is_anonymous:
-        return render(request, 'serverlist/loginrequired.html', {'GITHUB_CLIENT_ID': settings.GITHUB_CLIENT_ID})
+        return render(request, 'serverlist/loginrequired.html')
     elif not has_access(request.user):
         return redirect(reverse('serverlist:profile'))
 

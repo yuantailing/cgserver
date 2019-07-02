@@ -2,18 +2,7 @@
 {% load static %}
 {% block title %}Account status{% endblock %}
 
-{% block head %}
-{% if not user.is_anonymous %}
-<meta http-equiv="refresh" content="3;url='{% url 'serverlist:profile' %}'">
-{% endif %}
-{% endblock %}
-
 {% block content %}
-{% if user.is_anonymous %}
 <h1 class="mb-4">需要登录</h1>
 <p>请 <a href="{% url 'serverlist:loginpassword' %}">验证密码</a> 或 <a href="{% url 'serverlist:logingithuboauth' %}">通过 GitHub 授权</a> <img src="{% static 'serverlist/GitHub-Mark-32px.png' %}" style="height: 1em;">。</p>
-{% else %}
-<h1 class="mb-4">帐号信息</h1>
-<p>3 秒后跳转到 <a href="{% url 'serverlist:profile' %}">Profile</a></p>
-{% endif %}
 {% endblock %}
