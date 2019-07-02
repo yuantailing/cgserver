@@ -3,6 +3,8 @@
 {% block title %}Account status{% endblock %}
 
 {% block content %}
+
+{% if user.employee.can_access %}
 <h1 class="mb-4">Profile</h1>
 <p><b>Username:</b> <span>{{ user.username }}</span> | <a href="{% url 'serverlist:resetpassword' %}">change username</a></p>
 <p><b>Email:</b> <span>{{ user.email }}</span></p>
@@ -12,5 +14,13 @@
 {% else %}
 <p><b>Password:</b> <i style="color: red">has not been set</i> | <a href="{% url 'serverlist:resetpassword' %}">reset password</a></p>
 {% endif %}
+{% else %}
+<h1 class="mb-4">Profile (inactive)</h1>
+<p><b>Username:</b> <span>{{ user.username }}</span></p>
+<p><b>Email:</b> <span>{{ user.email }}</span></p>
+<p>Please notify administrator to activate your account.</p>
+<p>If you have just joined <a href="https://github.com/thucg">github.com/thucg</a>, please logout and login again.</p>
+{% endif %}
+
 <p>Revoke your GitHub authorization? Click <a href="https://github.com/settings/connections/applications/{{ GITHUB_CLIENT_ID }}">here</a>.</p>
 {% endblock %}

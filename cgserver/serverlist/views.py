@@ -58,27 +58,24 @@ def has_access(user):
 def check_access(func):
     @functools.wraps(func)
     def _decorator(request, *args, **kwargs):
-        if has_access(request.user):
+        if request.user.is_anonymous:
+            return redirect(reverse('serverlist:loginrequired'))
+        elif has_access(request.user):
             if not request.user.employee.staff_number:
                 request.user.employee.staff_number = 1 + (Employee.objects.all().aggregate(Max('staff_number'))['staff_number__max'] or 0)
                 request.user.employee.save()
             return func(request, *args, **kwargs)
         else:
-            if request.user.is_anonymous:
-                pass
-            elif not hasattr(request.user, 'employee'):
+            if not hasattr(request.user, 'employee'):
                 Employee.objects.create(user=request.user)
-            return redirect(reverse('serverlist:checkpermission'))
+            return redirect(reverse('serverlist:profile'))
     return _decorator
 
-def checkpermission(request):
-    if has_access(request.user):
-        return redirect(reverse('serverlist:profile'))
-    return render(request, 'serverlist/checkpermission.html', {'GITHUB_CLIENT_ID': settings.GITHUB_CLIENT_ID})
-
 def index(request):
-    if not has_access(request.user):
-        return render(request, 'serverlist/checkpermission.html', {'GITHUB_CLIENT_ID': settings.GITHUB_CLIENT_ID})
+    if request.user.is_anonymous:
+        return render(request, 'serverlist/loginrequired.html', {'GITHUB_CLIENT_ID': settings.GITHUB_CLIENT_ID})
+    elif not has_access(request.user):
+        return redirect(reverse('serverlist:profile'))
 
     client_reports = ClientReport.objects.values('client_id').annotate(id=models.Max('id'))
     clients_no_report = Client.objects.exclude(id__in=[c['client_id'] for c in client_reports]).order_by('client_id')
@@ -246,8 +243,9 @@ def recvreport(request):
             threading.Thread(target=dns_upsert, daemon=True).start()
     return JsonResponse({'error': 0, 'msg': 'ok'}, json_dumps_params={'sort_keys': True})
 
-@check_access
 def profile(request):
+    if request.user.is_anonymous:
+        return redirect(reverse('serverlist:loginrequired'))
     password_set = 0 < len(request.user.employee.shadow_password) and 0 < len(request.user.employee.nt_password_hash)
     return render(request, 'serverlist/profile.html', {'password_set': password_set, 'GITHUB_CLIENT_ID': settings.GITHUB_CLIENT_ID})
 

@@ -5,8 +5,8 @@ from . import views
 app_name = 'serverlist'
 
 urlpatterns = [
-    path('checkpermission', views.checkpermission, name='checkpermission'),
     path('', views.index, name='index'),
+    path('', views.index, name='loginrequired'),
     path('client/<int:pk>', views.client, name='client'),
     path('client/<int:pk>/chart', views.clientchart, name='clientchart'),
     path('client/<int:client_id>/report/<int:report_id>', views.clientreport, name='clientreport'),
@@ -17,7 +17,7 @@ urlpatterns = [
     path('ftp', views.ftp, name='ftp'),
     path('nas', views.nas, name='nas'),
     path('download', views.download, name='download'),
-    path('loginpassword', views.loginpassword, name='loginpassword'),
+    path('login', views.loginpassword, name='loginpassword'),
     path('logingithuboauth', views.logingithuboauth, name='logingithuboauth'),
     path('githubcallback', views.githubcallback, name='githubcallback'),
     path('vpnauth', views.vpnauth, name='vpnauth'),
