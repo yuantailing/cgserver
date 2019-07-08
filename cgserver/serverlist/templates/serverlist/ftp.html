@@ -70,7 +70,7 @@
 					<option value="false">单个文件</option>
 				</select>
 			</td>
-			<td>No access</td>
+			<td>{{ 'none'|ftppermtrans }}</td>
 			<td><button class="btn btn-sm btn-success" onclick="form_post()">添加</button></td>
 		</tr>
 	</tbody>
@@ -97,10 +97,10 @@
 			<td>{% if perm.isdir %}目录和子目录{% else %}单个文件{% endif %}</td>
 			<td>
 				<select class="form-control form-control-sm" id="input-permission-{{ perm.id }}">
-					<option value="none"  {% eqorno perm.permission 'none'  'selected' '' %}>None</option>
-					<option value="read"  {% eqorno perm.permission 'read'  'selected' '' %}>Read only</option>
-					<option value="write" {% eqorno perm.permission 'write' 'selected' '' %}>Read &amp; Write</option>
-					<option value="admin" {% eqorno perm.permission 'admin' 'selected' '' %}>Admin</option>
+					<option value="none"  {% eqorno perm.permission 'none'  'selected' '' %}>{{ 'none'|ftppermtrans }}</option>
+					<option value="read"  {% eqorno perm.permission 'read'  'selected' '' %}>{{ 'read'|ftppermtrans }}</option>
+					<option value="write" {% eqorno perm.permission 'write' 'selected' '' %}>{{ 'write'|ftppermtrans }}</option>
+					<option value="admin" {% eqorno perm.permission 'admin' 'selected' '' %}>{{ 'admin'|ftppermtrans }}</option>
 				</select>
 			</td>
 			<td>
@@ -122,10 +122,10 @@
 			</td>
 			<td>
 				<select class="form-control form-control-sm" id="input-admin-permission">
-					<option value="none"  {% eqorno perm.permission 'none'  'selected' '' %}>None</option>
-					<option value="read"  {% eqorno perm.permission 'read'  'selected' '' %}>Read only</option>
-					<option value="write" {% eqorno perm.permission 'write' 'selected' '' %}>Read &amp; Write</option>
-					<option value="admin" {% eqorno perm.permission 'admin' 'selected' '' %}>Admin</option>
+					<option value="none"  {% eqorno perm.permission 'none'  'selected' '' %}>{{ 'none'|ftppermtrans }}</option>
+					<option value="read"  {% eqorno perm.permission 'read'  'selected' '' %}>{{ 'read'|ftppermtrans }}</option>
+					<option value="write" {% eqorno perm.permission 'write' 'selected' '' %}>{{ 'write'|ftppermtrans }}</option>
+					<option value="admin" {% eqorno perm.permission 'admin' 'selected' '' %}>{{ 'admin'|ftppermtrans }}</option>
 				</select>
 			</td>
 			<td><button class="btn btn-sm btn-success" onclick="form_post_admin()">添加</button></td>

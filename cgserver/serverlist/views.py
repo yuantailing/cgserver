@@ -247,6 +247,7 @@ def profile(request):
     if request.user.is_anonymous:
         return redirect(reverse('serverlist:loginrequired'))
     password_set = 0 < len(request.user.employee.shadow_password) and 0 < len(request.user.employee.nt_password_hash)
+    AccessLog.objects.create(user=request.user, ip=get_ip(request), target='serverlist:profile')
     return render(request, 'serverlist/profile.html', {'password_set': password_set, 'GITHUB_CLIENT_ID': settings.GITHUB_CLIENT_ID})
 
 @check_access
@@ -644,8 +645,11 @@ def resetpassword(request):
         form = ResetPasswordForm(initial={'username': request.user.username})
         return render(request, 'serverlist/resetpassword.html', {'form': form, 'error': []})
 
+@check_access
 def logout(request):
     if request.method != 'POST':
         return HttpResponseBadRequest('malformed request')
+    user = request.user
     auth.logout(request)
+    AccessLog.objects.create(user=user, ip=get_ip(request), target='serverlist:logout')
     return redirect(reverse('serverlist:index'))
