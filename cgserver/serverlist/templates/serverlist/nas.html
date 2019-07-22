@@ -30,7 +30,7 @@
 	<code class="ml-3" style="color: #212529;">256 85:53:11:b0:18:f4:9d:84:3e:05:07:7f:22:2f:d3:e8 (ECDSA)</code><br>
 	登录：<code>$ ssh {{ user.username }}@nas.thucg.com</code><br>
 	登录时公钥指纹<strong class="text-danger">必须</strong>与以上指纹中的一个相同，否则<strong class="text-danger">必须</strong>停止登录<br>
-	sshfs 挂载命令：<code>$ sshfs -oreconnect {{ user.username }}@nas.thucg.com: /path/to/mount</code><br>
+	sshfs 挂载命令：<code>$ sshfs -oreconnect,ServerAliveInterval=15,ServerAliveCountMax=3 {{ user.username }}@nas.thucg.com: /path/to/mount</code><br>
 	sshfs 卸载命令：<code>$ fusermount -u /path/to/mount</code><br>
 	支持 SFTP<br>
 	只能在本网站修改用户名和密码，无法用 passwd 修改密码<br>
@@ -47,10 +47,10 @@
 <p>
   nfs 无法做用户身份验证，安全起见，所有用户都映射为 <code>nobody:nogroup</code>，只可读。如需开一个公共可写文件夹，可以 chmod 777（不推荐）<br>
   先安装 <code># apt install nfs-common</code><br>
-  方法一、通过 fstab 挂载：往 /etc/fstab 加一行 <code>nas.thucg.com:/	/path/to/mount	nfs	rsize=8192,wsize=8192,intr	0	0</code>，然后 <code># mount /path/to/mount</code><br>
-  方法二、直接挂载：<code># mount -tnfs -orsize=8192,wsize=8192,intr nas.thucg.com:/ /path/to/mount</code><br>
+  方法一、通过 fstab 挂载：往 /etc/fstab 加一行 <code>nas.thucg.com:/	/path/to/mount	nfs	rsize=1048576,wsize=1048576,_netdev,intr	0	0</code>，然后 <code># mount /path/to/mount</code><br>
+  方法二、直接挂载：<code># mount -tnfs -orsize=1048576,wsize=1048576,_netdev,intr nas.thucg.com:/ /path/to/mount</code><br>
   卸载命令：<code># umount /path/to/mount</code><br>
-  挂载时建议加 intr 选项，以免网络断开后无法 umount<br>
+  挂载时建议用 intr 选项，以免网络断开后无法 umount<br>
 </p>
 
 <h3>FAQ</h3>
