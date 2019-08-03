@@ -16,12 +16,13 @@
 		<li>/nas/disk-1/{{ uid }} (non-RAID) 暂时存放高频读写数据</li>
 	</ul>
 </p>
+<p>默认权限：<code>drwxr-x---</code>，自己可读写，其它登录用户只读，NFS 无访问权限</p>
 
 
 <hr>
 
 <h3>提供 3 种访问方式</h3>
-<h3>1. ssh</h3>
+<h3>1. ssh / SFTP</h3>
 <p>
 	服务器公钥指纹：<br>
 	<code class="ml-3" style="color: #212529;">2048 SHA256:2P8LqYgxCdZz0tT2+rFkmGcOLl2MkiEXjhOydid2dgY (RSA)</code><br>
@@ -32,25 +33,25 @@
 	登录时公钥指纹<strong class="text-danger">必须</strong>与以上指纹中的一个相同，否则<strong class="text-danger">必须</strong>停止登录<br>
 	sshfs 挂载命令：<code>$ sshfs -oreconnect,ServerAliveInterval=15,ServerAliveCountMax=3 {{ user.username }}@nas.thucg.com: /path/to/mount</code><br>
 	sshfs 卸载命令：<code>$ fusermount -u /path/to/mount</code><br>
-	支持 SFTP<br>
 	只能在本网站修改用户名和密码，无法用 passwd 修改密码<br>
 </p>
 
 <h3>2. Windows 映射网络驱动器</h3>
 <p>
-	网络位置填写 <code>\\nas.thucg.com\share</code>，用户名密码与 ssh 相同<br>
-	你具有与 ssh 同等的访问权限，即可以写自己的 home 目录和 777 文件夹<br>
+	“我的电脑”->“映射网络驱动器”，“网络位置”（或“文件夹”）填 <code>\\nas.thucg.com\share</code>，使用本网站的<a href="{% url 'serverlist:profile' %}">用户名和密码</a>登录<br>
 	注意：1) 两种系统对文件名大小写的敏感性不同，如果同时有 abc 和 ABC 两个文件，可能会出错。 2) 软链接会被当作文件夹，可能导致文件路径无限递归<br>
 </p>
 
 <h3>3. nfs</h3>
 <p>
-  nfs 无法做用户身份验证，安全起见，所有用户都映射为 <code>nobody:nogroup</code>，只可读。如需开一个公共可写文件夹，可以 chmod 777（不推荐）<br>
   先安装 <code># apt install nfs-common</code><br>
-  方法一、通过 fstab 挂载：往 /etc/fstab 加一行 <code>nas.thucg.com:/	/path/to/mount	nfs	rsize=1048576,wsize=1048576,_netdev,intr	0	0</code>，然后 <code># mount /path/to/mount</code><br>
-  方法二、直接挂载：<code># mount -tnfs -orsize=1048576,wsize=1048576,_netdev,intr nas.thucg.com:/ /path/to/mount</code><br>
+  方法一、通过 fstab 挂载：往 /etc/fstab 加一行 <code>nas.thucg.com:/	/path/to/mount	nfs	rsize=1048576,wsize=1048576,_netdev,intr	0	0</code>，然后 <code># mount /path/to/mount</code>，重启会自动挂载<br>
+  方法二、手动挂载一次：<code># mount -tnfs -orsize=1048576,wsize=1048576,_netdev,intr nas.thucg.com:/ /path/to/mount</code><br>
   卸载命令：<code># umount /path/to/mount</code><br>
   挂载时建议用 intr 选项，以免网络断开后无法 umount<br>
+  nfs 无法做用户身份验证，安全起见，所有用户都映射为 <code>nobody:nogroup</code><br>
+  如需 NFS 可读取自己的 home 目录，执行 <code>$ chmod 755 {{ home }}</code><br>
+  如需 NFS 可写入 some-dir，执行 <code>$ chmod 1777 {{ home }}/some-dir</code><br>
 </p>
 
 <h3>FAQ</h3>
@@ -63,11 +64,6 @@
 	Q: 密码错误<br>
 	A: 请在 <a href="http://nas.thucg.com/">nas.thucg.com</a> 查看服务目前的状态，有可能你的用户名不满足要求（例如你将自己的用户名改为 root），或者出现了其它错误<br>
 	A: 因为帐号是根据网站用户动态设置的，所以只能在本网站设置密码，没法用 passwd 命令设置
-</p>
-<p>
-	Q: 权限设置<br>
-	A: home 目录的默认权限是 <code>rwx------</code>，仅自己可读。若要其它登录用户可读 <code>$ chmod 750 {{ home }}</code>，若要 NFS mount 公开可读 <code>$ chmod 755 {{ home }}</code><br>
-	A: 不建议在自己的 home 目录授予其它用户写权限，否则其它用户和来自网络的匿名用户可以修改你的数据<br>
 </p>
 <p>
 	Q: 服务器连了外网吗？<br>
