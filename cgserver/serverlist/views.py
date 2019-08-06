@@ -348,7 +348,7 @@ def ftp(request):
     managedperms = FtpPerm.objects.raw(
         'SELECT MIN(fp1.{pk}) AS id, fp1.{user_id} AS user_id, fp1.{path} AS path, MIN(fp1.{isdir}) AS isdir, MIN(fp1.{permission}) AS permission, MIN(user.{username}) AS username, MIN(user.{email}) AS email FROM {fptb} AS fp1 '
         'INNER JOIN {fptb} AS fp2 '
-        'ON (fp1.{isdir}=fp2.{isdir} AND fp1.{path}=fp2.{path}) OR (fp2.{isdir}=1 AND (fp1.{path} LIKE fp2.{path}||"/%%" OR fp2.{path}="")) '
+        'ON (fp1.{isdir}=fp2.{isdir} AND fp1.{path}=fp2.{path}) OR (fp2.{isdir}=1 AND (fp1.{path} LIKE CONCAT(fp2.{path}, "/%%") OR fp2.{path}="")) '
         'LEFT OUTER JOIN {user} AS user '
         'ON fp1.{user_id}=user.{id} '
         'WHERE fp2.{user_id}={request_user_id} AND fp2.{permission}="admin" '
