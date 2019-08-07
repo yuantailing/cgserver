@@ -17,14 +17,14 @@
 <h1 class="mb-4">FTP</h1>
 <h3 class="mb-3">连接方式</h3>
 <p><b>服务器：</b>cg.cs.tsinghua.edu.cn</p>
-<p><b>端口：</b>21</p>
+<p><b>端口：</b>21 或 2121（校外访问只能用 2121，这是由于学校防火墙）</p>
 <p><b>帐号：</b>使用本网站的<a href="{% url 'serverlist:profile' %}">用户名和密码</a></p>
 {% if user.employee.ftp_insecure %}
 <p><img style="height: 1.4em;" src="{% static 'admin/img/icon-yes.svg' %}" alt="yes"> <b>FTP：</b>该帐号允许使用 FTP 协议登录</p>
 {% else %}
 <p><img style="height: 1.4em;" src="{% static 'admin/img/icon-no.svg' %}" alt="no"> <b>FTP：</b>默认禁止使用不安全的 FTP 协议登录，如另有需求可联系管理员</p>
 {% endif %}
-<p><img style="height: 1.4em;" src="{% static 'admin/img/icon-yes.svg' %}" alt="yes"> <b>FTPS：</b>可使用支持 FTPS 的客户端（例如 <a href="https://winscp.net/">WinSCP</a>、<a href="https://filezilla-project.org/">FileZilla</a>），登录时请检查服务器的安全证书</p>
+<p><img style="height: 1.4em;" src="{% static 'admin/img/icon-yes.svg' %}" alt="yes"> <b>FTPS：</b>可使用支持 FTPS 的客户端（例如 <a href="https://winscp.net/">WinSCP</a>、<a href="https://filezilla-project.org/">FileZilla</a>，Linux 可用 <code>$ lftp {{ user.username }}@cg.cs.tsinghua.edu.cn</code>），登录时请检查服务器的安全证书</p>
 
 <h3 class="mt-5">授权说明</h3>
 <ul>
