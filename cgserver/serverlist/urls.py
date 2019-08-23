@@ -24,6 +24,7 @@ urlpatterns = [
     path('ftpauth', views.ftpauth, name='ftpauth'),
     path('ftpinsecurecheck', views.ftpinsecurecheck, name='ftpinsecurecheck'),
     path('cgnas_api', views.cgnas_api, name='cgnas_api'),
+    path('radius_api', views.radius_api, name='radius_api'),
     path('resetpassword', views.resetpassword, name='resetpassword'),
     path('logout', views.logout, name='logout'),
 ]

@@ -586,6 +586,30 @@ def cgnas_api(request):
     }
     return JsonResponse(data, json_dumps_params={'sort_keys': True})
 
+@csrf_exempt
+def radius_api(request):
+    username = request.POST.get('username')
+    key = request.POST.get('key')
+    nas_ip = request.POST.get('nas_ip', '')
+    api_secret = request.POST.get('api_secret')
+    if api_secret != settings.RADIUS_API_SECRET:
+        return HttpResponseBadRequest('client secret error')
+    if key != 'NT-Password':
+        return HttpResponseBadRequest('key does not exist')
+    user = User.objects.filter(username=username).first()
+    if not user:
+        res = {'error': 1, 'msg': 'no such user'}
+    elif not has_access(user):
+        res = {'error': 3, 'msg': 'no access'}
+        AccessLog.objects.create(user=user, ip=nas_ip, target='serverlist:radius_api', param='noaccess')
+    elif not user.employee.nt_password_hash:
+        res = {'error': 4, 'msg': 'password not set'}
+        AccessLog.objects.create(user=user, ip=nas_ip, target='serverlist:radius_api', param='passwordnotset')
+    else:
+        res = {'error': 0, 'nt_password_hash': user.employee.nt_password_hash}
+        AccessLog.objects.create(user=user, ip=nas_ip, target='serverlist:radius_api', param='checkpassword')
+    return JsonResponse(res, json_dumps_params={'sort_keys': True})
+
 @check_access
 def resetpassword(request):
     if request.method == 'POST':
