@@ -1,28 +1,143 @@
 {% extends "./base.html" %}
 {% load static %}
 
+{% block head %}
+<style>
+.support-flag {
+	width: 24px;
+}
+</style>
+{% endblock %}
+
 {% block content %}
-<h1 class="mb-4">PPTP / L2TP</h1>
+<h1 class="mb-4">PPTP / IPSec</h1>
 <h3>PPTP</h3>
 <ul>
-	<li>Username: {{ PPTP_USERNAME }}</li>
-	<li>Password: {{ PPTP_PASSWORD }}</li>
+	<li><b>服务器：</b>cg.cs.tsinghua.edu.cn</li>
+	<li><b>帐号：</b>使用本网站的<a href="{% url 'serverlist:profile' %}">用户名和密码</a></li>
+</ul>
+<h3>IPSec XAuth</h3>
+<ul>
+	<li><b>服务器：</b>cg.cs.tsinghua.edu.cn</li>
+	<li><b>预共享密钥：</b>{{ L2TP_PRESHAREDKEY }}</li>
+	<li><b>帐号：</b>使用本网站的<a href="{% url 'serverlist:profile' %}">用户名和密码</a></li>
+	<li>在 Mac OS 上称为 Cisco IPSec，在 iOS 上称为 IPSec，有时也称为 IKEv1</li>
 </ul>
 <h3>L2TP</h3>
 <ul>
-	<li>预共享密钥: {{ L2TP_PRESHAREDKEY }}</li>
-	<li>Username: {{ L2TP_USERNAME }}</li>
-	<li>Password: {{ L2TP_PASSWORD }}</li>
+	<li><b>服务器：</b>cg.cs.tsinghua.edu.cn</li>
+	<li><b>预共享密钥：</b>{{ L2TP_PRESHAREDKEY }}</li>
+	<li><b>帐号：</b>使用本网站的<a href="{% url 'serverlist:profile' %}">用户名和密码</a></li>
+	<li>常被称为 L2TP/IPSec</li>
 </ul>
+<hr>
+
+<h3>系统支持情况</h3>
+<table class="table">
+	<thead>
+		<tr><th></th><th>OpenVPN<sup>1</sup></th><th>PPTP</th><th>IPSec XAuth</th><th>L2TP</th></tr>
+	</thead>
+	<tbody>
+		<tr>
+			<th>Windows</th>
+			<td><img class="support-flag" src="{% static 'admin/img/icon-yes.svg'%}" alt="yes"></td>
+			<td><img class="support-flag" src="{% static 'admin/img/icon-yes.svg'%}" alt="yes"></td>
+			<td><img class="support-flag" src="{% static 'admin/img/icon-no.svg'%}" alt="no"></td>
+			<td><img class="support-flag" src="{% static 'admin/img/icon-yes.svg'%}" alt="yes"><sup>2</sup></td>
+		</tr>
+		<tr>
+			<th>Linux</th>
+			<td><img class="support-flag" src="{% static 'admin/img/icon-yes.svg'%}" alt="yes"></td>
+			<td><img class="support-flag" src="{% static 'admin/img/icon-unknown.svg'%}" alt="unknown"></td>
+			<td><img class="support-flag" src="{% static 'admin/img/icon-no.svg'%}" alt="no"></td>
+			<td><img class="support-flag" src="{% static 'admin/img/icon-no.svg'%}" alt="no"></td>
+		</tr>
+		<tr>
+			<th>Mac OS</th>
+			<td><img class="support-flag" src="{% static 'admin/img/icon-yes.svg'%}" alt="yes"></td>
+			<td><img class="support-flag" src="{% static 'admin/img/icon-no.svg'%}" alt="no"></td>
+			<td><img class="support-flag" src="{% static 'admin/img/icon-yes.svg'%}" alt="yes"></td>
+			<td><img class="support-flag" src="{% static 'admin/img/icon-yes.svg'%}" alt="yes"><sup>3</sup></td>
+		</tr>
+		<tr>
+			<th>Android</th>
+			<td><img class="support-flag" src="{% static 'admin/img/icon-yes.svg'%}" alt="yes"></td>
+			<td><img class="support-flag" src="{% static 'admin/img/icon-yes.svg'%}" alt="yes"></td>
+			<td><img class="support-flag" src="{% static 'admin/img/icon-yes.svg'%}" alt="yes"></td>
+			<td><img class="support-flag" src="{% static 'admin/img/icon-yes.svg'%}" alt="yes"><sup>4</sup></td>
+		</tr>
+		<tr>
+			<th>iOS</th>
+			<td><img class="support-flag" src="{% static 'admin/img/icon-yes.svg'%}" alt="yes"></td>
+			<td><img class="support-flag" src="{% static 'admin/img/icon-no.svg'%}" alt="no"></td>
+			<td><img class="support-flag" src="{% static 'admin/img/icon-yes.svg'%}" alt="yes"></td>
+			<td><img class="support-flag" src="{% static 'admin/img/icon-yes.svg'%}" alt="yes"></td>
+		</tr>
+	</tbody>
+</table>
+<ol style="font-size: 85%;">
+	<li>OpenVPN 需要安装，其它几种 VPN 只考虑系统原生支持情况</li>
+	<li>需要在注册表里新建 HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\PolicyAgent\AssumeUDPEncapsulationContextOnSendRule，设置为 DWORD 2，然后重新启动</li>
+	<li>请在“高级”里勾选“通过 VPN 连接发送所有流量”</li>
+	<li>Android 7.0 以下正常，Android 8.0 连上 90 秒就会断开</li>
+</ol>
+
+<h3>网络环境支持情况</h3>
+<table class="table">
+	<thead>
+		<tr><th></th><th>OpenVPN</th><th>PPTP</th><th>IPSec XAuth</th><th>L2TP</th></tr>
+	</thead>
+	<tbody>
+		<tr>
+			<th>校内<sup>1</sup></th>
+			<td><img class="support-flag" src="{% static 'admin/img/icon-yes.svg'%}" alt="yes"></td>
+			<td><img class="support-flag" src="{% static 'admin/img/icon-yes.svg'%}" alt="yes"></td>
+			<td><img class="support-flag" src="{% static 'admin/img/icon-yes.svg'%}" alt="yes"></td>
+			<td><img class="support-flag" src="{% static 'admin/img/icon-yes.svg'%}" alt="yes"></td>
+		</tr>
+		<tr>
+			<th>校外</th>
+			<td><img class="support-flag" src="{% static 'admin/img/icon-yes.svg'%}" alt="yes"></td>
+			<td><img class="support-flag" src="{% static 'admin/img/icon-yes.svg'%}" alt="yes"></td>
+			<td><img class="support-flag" src="{% static 'admin/img/icon-no.svg'%}" alt="no"></td>
+			<td><img class="support-flag" src="{% static 'admin/img/icon-no.svg'%}" alt="no"></td>
+		</tr>
+		<tr>
+			<th>不支持 PPTP 穿透的路由器<sup>2</sup></th>
+			<td><img class="support-flag" src="{% static 'admin/img/icon-yes.svg'%}" alt="yes"></td>
+			<td><img class="support-flag" src="{% static 'admin/img/icon-no.svg'%}" alt="no"></td>
+			<td><img class="support-flag" src="{% static 'admin/img/icon-unknown.svg'%}" alt="unknown"><sup>3</sup></td>
+			<td><img class="support-flag" src="{% static 'admin/img/icon-unknown.svg'%}" alt="unknown"><sup>3</sup></td>
+		</tr>
+		<tr>
+			<th>境外</th>
+			<td><img class="support-flag" src="{% static 'admin/img/icon-no.svg'%}" alt="no"><sup>4</sup></td>
+			<td><img class="support-flag" src="{% static 'admin/img/icon-no.svg'%}" alt="no"><sup>4</sup></td>
+			<td><img class="support-flag" src="{% static 'admin/img/icon-no.svg'%}" alt="no"></td>
+			<td><img class="support-flag" src="{% static 'admin/img/icon-no.svg'%}" alt="no"></td>
+		</tr>
+	</tbody>
+</table>
+<ol style="font-size: 85%;">
+	<li>需要连准入认证（<a href="https://auth4.tsinghua.edu.cn/">auth4.tsinghua.edu.cn</a>），可以不连校园网（<a href="https://net.tsinghua.edu.cn/">net.tsinghua.edu.cn</a>）。不包括 DIVI 等无需登校园网帐号的网络环境</li>
+	<li>例如手机移动网络、某些路由器、未加载 ip_conntrack_pptp 的 Linux NAT</li>
+	<li>还由其它网络因素决定</li>
+	<li>不同时候会得到不同结果</li>
+</ol>
 <hr>
 
 <h3>FAQ</h3>
 <p>
-	Q: 可以设置成只有校外流量走 VPN，校内流量直连吗？<br>
-	A: 否，PPTP 默认把所有流量都会导向服务器，不会区分校内和校外流量，你需要手动修改路由表。对此 <a href="{% url 'serverlist:vpn' %}">OpenVPN</a> 更智能一点
+	Q: 能连 cg.cs.tsinghua.edu.cn（能访问主页）但连不上 VPN<br>
+	A: 参见“网络环境支持情况”
 </p>
 <p>
-	Q: 上得了主页但连不上 PPTP / L2TP<br>
-	A: PPTP / L2TP 无法穿透某些 NAT 和防火墙，此时 <a href="{% url 'serverlist:vpn' %}">OpenVPN</a> 有希望连上
+	Q: 可以设置成只有校外流量走 VPN，校内流量直连吗？<br>
+	A: 由客户端软件决定。Windows、Linux、Mac OS 上的 <a href="{% url 'serverlist:vpn' %}">OpenVPN</a> 会根据配置文件决定路由表；其它软件一般会把所有流量导向服务器，不区分校内和校外流量，你需要手动修改路由表
+</p>
+<p>
+	Q: 安全性<br>
+	A: 在攻击者能截获所有流量且知道 IPSec 预共享密钥的情况下，OpenVPN 安全，PPTP、L2TP 会泄漏通信内容，IPSec XAuth 会泄漏密码<br>
+	A: 有基于证书（而不是预共享密钥）的 IPSec XAuth 和 L2TP/IPSec 可以保证安全，但客户端配置起来会比较麻烦，因此没有采用
 </p>
 {% endblock %}

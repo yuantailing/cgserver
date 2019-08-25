@@ -258,11 +258,7 @@ def vpn(request):
 @check_access
 def pptp(request):
     passwords = dict(
-        PPTP_USERNAME=settings.PPTP_USERNAME,
-        PPTP_PASSWORD=settings.PPTP_PASSWORD,
         L2TP_PRESHAREDKEY=settings.L2TP_PRESHAREDKEY,
-        L2TP_USERNAME=settings.L2TP_USERNAME,
-        L2TP_PASSWORD=settings.L2TP_PASSWORD,
     )
     AccessLog.objects.create(user=request.user, ip=get_ip(request), target='serverlist:pptp')
     return render(request, 'serverlist/pptp.html', passwords)
