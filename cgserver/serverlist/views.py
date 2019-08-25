@@ -589,16 +589,22 @@ def cgnas_api(request):
 @csrf_exempt
 def radius_api(request):
     username = request.POST.get('username')
-    key = request.POST.get('key')
     nas_ip = request.POST.get('nas_ip', '')
+    nas_type = request.POST.get('nas_type', '')
+    ip = request.POST.get('ip', '')
+    account_status_type = request.POST.get('account_status_type', '')
+    key = request.POST.get('key')
     api_secret = request.POST.get('api_secret')
     if api_secret != settings.RADIUS_API_SECRET:
         return HttpResponseBadRequest('client secret error')
-    if key != 'NT-Password':
+    if key not in ('NT-Password', 'Accounting-Request', ):
         return HttpResponseBadRequest('key does not exist')
     user = User.objects.filter(username=username).first()
     if not user:
         res = {'error': 1, 'msg': 'no such user'}
+    elif key == 'Accounting-Request':
+        res = {'error': 0}
+        AccessLog.objects.create(user=user, ip=ip, target='serverlist:radius_api', param='{:s}-{:s}'.format(nas_type, account_status_type))
     elif not has_access(user):
         res = {'error': 3, 'msg': 'no access'}
         AccessLog.objects.create(user=user, ip=nas_ip, target='serverlist:radius_api', param='noaccess')
