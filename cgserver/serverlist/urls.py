@@ -20,6 +20,7 @@ urlpatterns = [
     path('login', views.loginpassword, name='loginpassword'),
     path('logingithuboauth', views.logingithuboauth, name='logingithuboauth'),
     path('githubcallback', views.githubcallback, name='githubcallback'),
+    path('opencheckuser', views.opencheckuser, name='opencheckuser'),
     path('vpnauth', views.vpnauth, name='vpnauth'),
     path('ftpauth', views.ftpauth, name='ftpauth'),
     path('ftpinsecurecheck', views.ftpinsecurecheck, name='ftpinsecurecheck'),

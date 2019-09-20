@@ -53,7 +53,12 @@ def get_mac(report, ip):
     return None
 
 def has_access(user):
-    return not user.is_anonymous and hasattr(user, 'employee') and user.employee.can_access
+    if not user.is_anonymous and hasattr(user, 'employee') and user.employee.can_access:
+        if not user.employee.staff_number:
+            user.employee.staff_number = 1 + (Employee.objects.all().aggregate(Max('staff_number'))['staff_number__max'] or 0)
+            user.employee.save()
+        return True
+    return False
 
 def check_access(func):
     @functools.wraps(func)
@@ -61,9 +66,6 @@ def check_access(func):
         if request.user.is_anonymous:
             return redirect(reverse('serverlist:loginrequired'))
         elif has_access(request.user):
-            if not request.user.employee.staff_number:
-                request.user.employee.staff_number = 1 + (Employee.objects.all().aggregate(Max('staff_number'))['staff_number__max'] or 0)
-                request.user.employee.save()
             return func(request, *args, **kwargs)
         else:
             if not hasattr(request.user, 'employee'):
@@ -462,6 +464,28 @@ def githubcallback(request):
     AccessLog.objects.create(user=user, ip=get_ip(request), target='serverlist:githubcallback')
     auth.login(request, user)
     return redirect(reverse('serverlist:index'))
+
+@csrf_exempt
+def opencheckuser(request):
+    username = request.POST.get('username')
+    password = request.POST.get('password')
+    ip = request.POST.get('ip', '')
+    client = request.POST.get('client', '')
+    api_secret = request.POST.get('api_secret')
+    if api_secret not in settings.OPENCHECKUSER_SECRETS:
+        return HttpResponseBadRequest('client secret error')
+    user = User.objects.filter(username=username).first()
+    if not user:
+        res = {'error': 1, 'msg': 'no such user'}
+    elif not user.check_password(password):
+        res = {'error': 2, 'msg': 'password error'}
+    elif not has_access(user):
+        res = {'error': 3, 'msg': 'no access'}
+        AccessLog.objects.create(user=user, ip=ip, target='serverlist:opencheckuser', param='noaccess', info=client)
+    else:
+        res = {'error': 0, 'user_id': user.id, 'staff_number': user.employee.staff_number}
+        AccessLog.objects.create(user=user, ip=ip, target='serverlist:opencheckuser', param='success', info=client)
+    return JsonResponse(res, json_dumps_params={'sort_keys': True})
 
 @csrf_exempt
 def vpnauth(request):
