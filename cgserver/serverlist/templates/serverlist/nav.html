@@ -9,6 +9,7 @@
 			<li class="nav-item"><a class="nav-link{% eqorno request.resolver_match.url_name 'vpn'      ' active' '' %}" href="{% url 'serverlist:vpn' %}">OpenVPN</a></li>
 			<li class="nav-item"><a class="nav-link{% eqorno request.resolver_match.url_name 'pptp'     ' active' '' %}" href="{% url 'serverlist:pptp' %}">PPTP</a></li>
 			<li class="nav-item"><a class="nav-link{% eqorno request.resolver_match.url_name 'ftp'      ' active' '' %}" href="{% url 'serverlist:ftp' %}">FTP</a></li>
+			<li class="nav-item"><a class="nav-link{% eqorno request.resolver_match.url_name 'latex'    ' active' '' %}" href="{% url 'serverlist:latex' %}">LaTeX</a></li>
 			<li class="nav-item"><a class="nav-link{% eqorno request.resolver_match.url_name 'nas'      ' active' '' %}" href="{% url 'serverlist:nas' %}">NAS</a></li>
 			<li class="nav-item"><a class="nav-link{% eqorno request.resolver_match.url_name 'download' ' active' '' %}" href="{% url 'serverlist:download' %}">Download</a></li>
 			{% endif %}

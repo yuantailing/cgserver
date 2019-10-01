@@ -15,6 +15,7 @@ urlpatterns = [
     path('vpn', views.vpn, name='vpn'),
     path('pptp', views.pptp, name='pptp'),
     path('ftp', views.ftp, name='ftp'),
+    path('latex', views.latex, name='latex'),
     path('nas', views.nas, name='nas'),
     path('download', views.download, name='download'),
     path('login', views.loginpassword, name='loginpassword'),

@@ -369,6 +369,11 @@ def ftp(request):
     return render(request, 'serverlist/ftp.html', {'myperms': myperms, 'managedperms': list(managedperms), 'form': FtpForm()})
 
 @check_access
+def latex(request):
+    AccessLog.objects.create(user=request.user, ip=get_ip(request), target='serverlist:latex')
+    return render(request, 'serverlist/latex.html')
+
+@check_access
 def nas(request):
     uid = '{:d}'.format(request.user.employee.staff_number + 10000)
     home = '/nas/raid/{:s}'.format(uid)

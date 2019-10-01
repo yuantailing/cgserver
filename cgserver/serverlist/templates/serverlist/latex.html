@@ -1,0 +1,91 @@
+{% extends "./base.html" %}
+{% load static %}
+
+{% block head %}
+<style>
+.support-flag {
+	width: 20px;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<h1 class="mb-4"><img src="{% static 'serverlist/LaTeX_logo.svg' %}" style="height: 80px;" alt="LaTeX logo"></h1>
+<p><b>网址</b>（校内访问优化）<a href="https://www.thucg.com/latex">www.thucg.com/latex</a></p>
+<p><b>网址</b>（用于校外访问）<a href="https://cg.cs.tsinghua.edu.cn/latex">cg.cs.tsinghua.edu.cn/latex</a></p>
+<p><b>帐号：</b>使用本网站的<a href="{% url 'serverlist:profile' %}">用户名和密码</a></p>
+<hr>
+
+<h3>改版说明</h3>
+<p>修改自 <a href="https://github.com/overleaf/overleaf">Overleaf Community Edition 2.0</a>，编译套件是 TeX Live 2019。</p>
+<p>Community 版删减的 track changes、comment、源文件和 PDF 之间跳转功能被我 <a href="https://github.com/yuantailing/web-sharelatex/commit/970228a5f838a0bd0ea29a6a476a7c1da4f330f3">加了</a> <a href="https://github.com/yuantailing/clsi-sharelatex/commit/60fd936798ee73270ad53e1f7cb439b16bfbc85d">回来</a>。</p>
+<p>系统不验证邮箱，也不发送邮件。</p>
+<p>系统内的密码设置不起作用，只能使用本网站帐号登录。与无账号的用户协作可以使用链接分享。</p>
+<p>主要功能对比：</p>
+
+<table class="table text-center">
+	<thead>
+		<tr>
+			<td></td>
+			<td>Overleaf Personal</td>
+			<td>Community Edition</td>
+			<td><strong>Ours</strong></td>
+			<td><a href="https://www.overleaf.com/user/subscription/plans">Overleaf Professional</a></td>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td>Price</td>
+			<td>Free</td>
+			<td>Free</td>
+			<td><strong>Free</strong></td>
+			<td>$30/mo</td>
+		</tr>
+		<tr>
+			<td>Number of collaborators</td>
+			<td>1</td>
+			<td>Unlimited</td>
+			<td><strong>Unlimited</strong></td>
+			<td>Unlimited</td>
+		</tr>
+		<tr>
+			<td>Real-time track changes</td>
+			<td><img class="support-flag" src="{% static 'admin/img/icon-no.svg'%}" alt="no"></td>
+			<td><img class="support-flag" src="{% static 'admin/img/icon-no.svg'%}" alt="no"></td>
+			<td><img class="support-flag" src="{% static 'admin/img/icon-yes.svg'%}" alt="yes"></td>
+			<td><img class="support-flag" src="{% static 'admin/img/icon-yes.svg'%}" alt="yes"></td>
+		</tr>
+		<tr>
+			<td>源文件和 PDF 之间跳转</td>
+			<td><img class="support-flag" src="{% static 'admin/img/icon-yes.svg'%}" alt="yes"></td>
+			<td><img class="support-flag" src="{% static 'admin/img/icon-no.svg'%}" alt="no"><sup>1</sup></td>
+			<td><img class="support-flag" src="{% static 'admin/img/icon-yes.svg'%}" alt="yes"></td>
+			<td><img class="support-flag" src="{% static 'admin/img/icon-yes.svg'%}" alt="yes"></td>
+		</tr>
+		<tr>
+			<td>Rich text editor</td>
+			<td><img class="support-flag" src="{% static 'admin/img/icon-yes.svg'%}" alt="yes"></td>
+			<td><img class="support-flag" src="{% static 'admin/img/icon-no.svg'%}" alt="no"></td>
+			<td><img class="support-flag" src="{% static 'admin/img/icon-no.svg'%}" alt="no"></td>
+			<td><img class="support-flag" src="{% static 'admin/img/icon-yes.svg'%}" alt="yes"></td>
+		</tr>
+		<tr>
+			<td>GitHub integration</td>
+			<td><img class="support-flag" src="{% static 'admin/img/icon-no.svg'%}" alt="no"></td>
+			<td><img class="support-flag" src="{% static 'admin/img/icon-no.svg'%}" alt="no"></td>
+			<td><img class="support-flag" src="{% static 'admin/img/icon-no.svg'%}" alt="no"></td>
+			<td><img class="support-flag" src="{% static 'admin/img/icon-yes.svg'%}" alt="yes"></td>
+		</tr>
+		<tr>
+			<td>延迟、带宽</td>
+			<td>U.S.A.</td>
+			<td></td>
+			<td><strong>校内</strong></td>
+			<td>U.S.A.</td>
+		</tr>
+	</tbody>
+</table>
+<ol style="font-size: 85%;">
+	<li>overleaf 2.0 没这个功能，但较旧的 sharelatex 1.2 有这个功能</li>
+</ol>
+{% endblock %}
