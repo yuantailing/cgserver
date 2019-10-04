@@ -11,14 +11,15 @@
 
 {% block content %}
 <h1 class="mb-4"><img src="{% static 'serverlist/LaTeX_logo.svg' %}" style="height: 80px;" alt="LaTeX logo"></h1>
-<p><b>网址</b>（校内访问优化）<a href="https://www.thucg.com/latex">www.thucg.com/latex</a></p>
-<p><b>网址</b>（用于校外访问）<a href="https://cg.cs.tsinghua.edu.cn/latex">cg.cs.tsinghua.edu.cn/latex</a></p>
+<p><b>网址</b>（校内访问优化）<a href="https://www.thucg.com/latex/">www.thucg.com/latex</a></p>
+<p><b>网址</b>（用于校外访问）<a href="https://cg.cs.tsinghua.edu.cn/latex/">cg.cs.tsinghua.edu.cn/latex</a></p>
 <p><b>帐号：</b>使用本网站的<a href="{% url 'serverlist:profile' %}">用户名和密码</a></p>
+<p>数据持久性：每天加密备份到 AWS S3，至少 28 天滚动备份</p>
 <hr>
 
 <h3>改版说明</h3>
 <p>修改自 <a href="https://github.com/overleaf/overleaf">Overleaf Community Edition 2.0</a>，编译套件是 TeX Live 2019。</p>
-<p>Community 版删减的 track changes、comment、源文件和 PDF 之间跳转功能被我 <a href="https://github.com/yuantailing/web-sharelatex/commit/970228a5f838a0bd0ea29a6a476a7c1da4f330f3">加了</a> <a href="https://github.com/yuantailing/clsi-sharelatex/commit/60fd936798ee73270ad53e1f7cb439b16bfbc85d">回来</a>。</p>
+<p>Community 版删减的 track changes、comment、源文件和 PDF 之间跳转功能被我 <a href="https://github.com/yuantailing/web-sharelatex/commit/970228a5f838a0bd0ea29a6a476a7c1da4f330f3">加了</a> <a href="https://github.com/yuantailing/clsi-sharelatex/commit/481a49a587b1b71c97218a7803c5460d7b5ecbe7">回来</a>。</p>
 <p>系统不验证邮箱，也不发送邮件。</p>
 <p>系统内的密码设置不起作用，只能使用本网站帐号登录。与无账号的用户协作可以使用链接分享。</p>
 <p>主要功能对比：</p>

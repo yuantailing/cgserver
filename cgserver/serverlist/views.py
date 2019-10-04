@@ -486,10 +486,9 @@ def opencheckuser(request):
         res = {'error': 2, 'msg': 'password error'}
     elif not has_access(user):
         res = {'error': 3, 'msg': 'no access'}
-        AccessLog.objects.create(user=user, ip=ip, target='serverlist:opencheckuser', param='noaccess', info=client)
     else:
         res = {'error': 0, 'user_id': user.id, 'staff_number': user.employee.staff_number}
-        AccessLog.objects.create(user=user, ip=ip, target='serverlist:opencheckuser', param='success', info=client)
+        AccessLog.objects.create(user=user, ip=ip, target='serverlist:opencheckuser', param=client)
     return JsonResponse(res, json_dumps_params={'sort_keys': True})
 
 @csrf_exempt
