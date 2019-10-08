@@ -1,0 +1,8 @@
+{% load static serverlisttags %}
+{% if user.employee.vpn_privileged and not user.employee.vpn_privileged_until|datetimeexpires %}
+<img style="width: 20px;" src="{% static 'admin/img/icon-yes.svg'%}" alt="yes">
+你的帐号可以从校内连接 VPN，在 {{ user.employee.vpn_privileged_until | date:'Y-m-d H:i:s' }} 前可从校外连接 OpenVPN 和 PPTP。延长时间需额外申请
+{% else %}
+<img style="width: 20px;" src="{% static 'admin/img/icon-no.svg'%}" alt="no">
+你的帐号可以从校内连接 VPN，但不允许从校外连接 VPN。从校外连接需额外申请
+{% endif %}

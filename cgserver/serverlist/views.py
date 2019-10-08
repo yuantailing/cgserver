@@ -2,6 +2,7 @@ import base64
 import boto3
 import crypt
 import functools
+import ipaddress
 import json
 import math
 import os
@@ -39,6 +40,16 @@ def get_ip(request):
         return x_forwarded_for.split(',')[0]
     else:
         return request.META.get('REMOTE_ADDR')
+
+def is_tsinghua_ip(ip):
+    addr = ipaddress.ip_address(ip)
+    return any(addr in ipaddress.ip_network(net) for net in (
+        '166.111.0.0/16',
+        '59.66.0.0/16',
+        '101.5.0.0/16',
+        '101.6.0.0/16',
+        '183.172.0.0/15',
+    ))
 
 def get_mac(report, ip):
     for if_addr in report['net_if_addrs'].values():
@@ -515,8 +526,10 @@ def vpnauth(request):
             return {'error': 1, 'msg': 'no such user'}, None, None
         if not user.check_password(password):
             return {'error': 2, 'msg': 'password error'}, None, None
+        if (not user.employee.vpn_privileged or user.employee.vpn_privileged_until.timestamp() < time.time()) and not is_tsinghua_ip(ip):
+            return {'error': 5, 'msg': 'ip forbidden'}, user, 'ipforbidden'
         if not has_access(user):
-            return {'error': 3, 'msg': 'no access'}, user, 'error'
+            return {'error': 3, 'msg': 'no access'}, user, 'noaccess'
         return {'error': 0, 'msg': 'ok'}, user, 'success'
     res, client, param = try_client()
     if client:
@@ -632,6 +645,9 @@ def radius_api(request):
     elif not has_access(user):
         res = {'error': 3, 'msg': 'no access'}
         AccessLog.objects.create(user=user, ip=ip, target='serverlist:radius_api', param='noaccess', info=json.dumps({'nas_ip': nas_ip}, sort_keys=True))
+    elif (not user.employee.vpn_privileged or user.employee.vpn_privileged_until.timestamp() < time.time()) and (ip != '' and not is_tsinghua_ip(ip)):
+        res = {'error': 5, 'msg': 'ip forbidden'}
+        AccessLog.objects.create(user=user, ip=ip, target='serverlist:radius_api', param='ipforbidden', info=json.dumps({'nas_ip': nas_ip}, sort_keys=True))
     elif not user.employee.nt_password_hash:
         res = {'error': 4, 'msg': 'password not set'}
         AccessLog.objects.create(user=user, ip=ip, target='serverlist:radius_api', param='passwordnotset', info=json.dumps({'nas_ip': nas_ip}, sort_keys=True))

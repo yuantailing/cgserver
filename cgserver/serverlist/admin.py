@@ -7,7 +7,7 @@ from django.contrib.auth.models import User
 
 class AccessLogAdmin(admin.ModelAdmin):
     list_display = ('id', 'user', 'client', 'ip', 'target', 'param', 'created_at', )
-    list_filter = ('user', 'client', 'ip', 'target', )
+    list_filter = ('user', 'client', 'target', )
     readonly_fields = ('user', 'client', 'ip', 'target', 'param', 'info', )
 
 
@@ -21,15 +21,16 @@ class ClientReportAdmin(admin.ModelAdmin):
 
 
 class EmployeeAdmin(admin.ModelAdmin):
-    def user_username(inst):
-        return inst.user.username
-
     def user_email(inst):
         return inst.user.email
 
-    list_display = ('user_id', user_username, user_email, 'can_access', 'staff_number', 'ftp_insecure', )
-    list_filter = ('can_access', 'ftp_insecure', )
-    readonly_fields = (user_username, user_email, )
+    def password_is_set(inst):
+        return inst.shadow_password not in (None, '') and inst.nt_password_hash not in (None, '')
+
+    list_display = ('id', 'user', user_email, 'can_access', 'staff_number', 'vpn_privileged', 'vpn_privileged_until', 'ftp_insecure', )
+    list_filter = ('can_access', 'vpn_privileged', 'ftp_insecure', )
+    exclude = ('nt_password_hash', 'shadow_password', )
+    readonly_fields = ('user', user_email, 'staff_number', password_is_set, 'password_updated_at', )
 
 
 class FtpPermAdmin(admin.ModelAdmin):
