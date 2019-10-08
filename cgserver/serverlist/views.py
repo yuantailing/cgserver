@@ -631,13 +631,13 @@ def radius_api(request):
         AccessLog.objects.create(user=user, ip=ip, target='serverlist:radius_api', param='{:s}-{:s}'.format(nas_type, account_status_type))
     elif not has_access(user):
         res = {'error': 3, 'msg': 'no access'}
-        AccessLog.objects.create(user=user, ip=nas_ip, target='serverlist:radius_api', param='noaccess')
+        AccessLog.objects.create(user=user, ip=ip, target='serverlist:radius_api', param='noaccess', info=json.dumps({'nas_ip': nas_ip}, sort_keys=True))
     elif not user.employee.nt_password_hash:
         res = {'error': 4, 'msg': 'password not set'}
-        AccessLog.objects.create(user=user, ip=nas_ip, target='serverlist:radius_api', param='passwordnotset')
+        AccessLog.objects.create(user=user, ip=ip, target='serverlist:radius_api', param='passwordnotset', info=json.dumps({'nas_ip': nas_ip}, sort_keys=True))
     else:
         res = {'error': 0, 'nt_password_hash': user.employee.nt_password_hash}
-        AccessLog.objects.create(user=user, ip=nas_ip, target='serverlist:radius_api', param='checkpassword')
+        AccessLog.objects.create(user=user, ip=ip, target='serverlist:radius_api', param='checkpassword', info=json.dumps({'nas_ip': nas_ip}, sort_keys=True))
     return JsonResponse(res, json_dumps_params={'sort_keys': True})
 
 @check_access
