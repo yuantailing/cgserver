@@ -4,7 +4,6 @@
 
 {% block head %}
 <script src="{% static 'serverlist/Chart.min.js' %}"></script>
-<script src="{% static 'serverlist/base64.min.js' %}"></script><!-- Licensed under the BSD 3-Clause License. https://github.com/dankogai/js-base64 -->
 {% endblock %}
 
 {% block content %}
@@ -101,6 +100,6 @@
 			});
 		});
 	}
-})(JSON.parse(Base64.decode("{{ data }}")));
+})(JSON.parse(atob("{{ data }}")));
 </script>
 {% endblock %}
