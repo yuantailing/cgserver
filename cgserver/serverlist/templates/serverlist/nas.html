@@ -34,6 +34,7 @@
 	sshfs 挂载命令：<code>$ sshfs -oreconnect,ServerAliveInterval=15,ServerAliveCountMax=3 {{ user.username }}@nas.thucg.com: /path/to/mount</code><br>
 	sshfs 卸载命令：<code>$ fusermount -u /path/to/mount</code><br>
 	只能在本网站修改用户名和密码，无法用 passwd 修改密码<br>
+	警告：删除挂载点时请使用 <code>$ rmdir /path/to/mount</code>，不要用 rm -r。因为万一没有卸载，rm -r 会递归删除 NAS 上的数据，而 rmdir 不会<br>
 </p>
 
 <h3>2. Windows 映射网络驱动器</h3>
@@ -44,14 +45,15 @@
 
 <h3>3. nfs</h3>
 <p>
-  先安装 <code># apt install nfs-common</code><br>
-  方法一、通过 fstab 挂载：往 /etc/fstab 加一行 <code>nas.thucg.com:/	/path/to/mount	nfs	rsize=1048576,wsize=1048576,_netdev,intr	0	0</code>，然后 <code># mount /path/to/mount</code>，重启会自动挂载<br>
-  方法二、手动挂载一次：<code># mount -tnfs -orsize=1048576,wsize=1048576,_netdev,intr nas.thucg.com:/ /path/to/mount</code><br>
-  卸载命令：<code># umount /path/to/mount</code><br>
-  挂载时建议用 intr 选项，以免网络断开后无法 umount<br>
-  nfs 无法做用户身份验证，安全起见，所有用户都映射为 <code>nobody:nogroup</code><br>
-  如需 NFS 可读取自己的 home 目录，执行 <code>$ chmod 755 {{ home }}</code><br>
-  如需 NFS 可写入 some-dir，执行 <code>$ chmod 1777 {{ home }}/some-dir</code><br>
+	先安装 <code># apt install nfs-common</code><br>
+	方法一、通过 fstab 挂载：往 /etc/fstab 加一行 <code>nas.thucg.com:/	/path/to/mount	nfs	nosuid,nodev	0	0</code>，然后 <code># mount /path/to/mount</code>，重启会自动挂载<br>
+	方法二、手动挂载一次：<code># mount -tnfs -onosuid,nodev nas.thucg.com:/ /path/to/mount</code><br>
+	卸载命令：<code># umount /path/to/mount</code><br>
+	必须开启 nosuid,nodev 选项以增加安全性<br>
+	nfs 无法做用户身份验证，安全起见，所有用户都映射为 <code>nobody:nogroup</code><br>
+	如需 NFS 可读取自己的 home 目录，执行 <code>$ chmod 755 {{ home }}</code><br>
+	如需 NFS 可写入 some-dir，执行 <code>$ chmod 1777 {{ home }}/some-dir</code><br>
+	警告：删除挂载点时请使用 <code>$ rmdir /path/to/mount</code>，不要用 rm -r。因为万一没有卸载，rm -r 会递归删除 NAS 上的数据，而 rmdir 不会<br>
 </p>
 
 <h3>FAQ</h3>
@@ -62,7 +64,7 @@
 </p>
 <p>
 	Q: 密码错误<br>
-	A: 请在 <a href="http://nas.thucg.com/">nas.thucg.com</a> 查看服务目前的状态，有可能你的用户名不满足要求（例如你将自己的用户名改为 root），或者出现了其它错误<br>
+	A: 请在 <a href="http://nas.thucg.com/">nas.thucg.com</a> 查看服务目前的状态，有可能你的用户名不满足要求（例如 root、nobody 等系统帐号），或者出现了其它错误<br>
 	A: 因为帐号是根据网站用户动态设置的，所以只能在本网站设置密码，没法用 passwd 命令设置
 </p>
 <p>
