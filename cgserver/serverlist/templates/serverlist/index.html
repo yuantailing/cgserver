@@ -15,7 +15,7 @@ table td {
 <div class="container-flex mt-4 mb-5">
 	<h1 class="ml-3 ml-md-4 mb-4">服务器列表</h1>
 	<div class="p-2 mobile-scroll">
-		<table class="table table-sm table-hover">
+		<table class="table table-sm table-hover table-striped">
 			<thead>
 				<tr>
 					<th>Client</th>
@@ -27,7 +27,7 @@ table td {
 					<th>磁盘</th>
 					<th>显卡</th>
 					<th>显存</th>
-					<th>GPU-Util</th>
+					<th class="text-center">GPU-Util</th>
 					<th>在线用户</th>
 					<th>uptime</th>
 					<th>数据更新</th>
@@ -41,7 +41,7 @@ table td {
 				{% for tr in table %}
 				<tr>
 					{% for td in tr.tr %}
-					<td>
+					<td{% if forloop.counter == 10 %} align="right"{% endif %}>
 						{% if td|islist %}
 							{% for line in td %}
 								{{ line }}<br>
