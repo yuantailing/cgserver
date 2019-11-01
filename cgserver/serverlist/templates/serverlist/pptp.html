@@ -11,6 +11,7 @@
 
 {% block content %}
 <h1 class="mb-4">PPTP / IPSec</h1>
+<p>此 VPN 只能节省校园网流量费，与国际联网无关</p>
 <h3>PPTP</h3>
 <ul>
 	<li><b>服务器：</b>166.111.68.30</li>
@@ -32,6 +33,7 @@
 	<li><b>帐号：</b>使用本网站的<a href="{% url 'serverlist:profile' %}">用户名和密码</a></li>
 	<li>常被称为 L2TP/IPSec</li>
 </ul>
+{% include "./tmpl_vpn_net_readme.html" %}
 <hr>
 
 <h3>系统支持情况</h3>
@@ -130,12 +132,12 @@
 
 <h3>FAQ</h3>
 <p>
-	Q: 能连 cg.cs.tsinghua.edu.cn（能访问主页）但连不上 VPN<br>
+	Q: 能 ping 通 166.111.68.30 但连不上 VPN<br>
 	A: 参见“网络环境支持情况”
 </p>
 <p>
 	Q: 可以设置成只有校外流量走 VPN，校内流量直连吗？<br>
-	A: 由客户端软件决定。Windows、Linux、Mac OS 上的 <a href="{% url 'serverlist:vpn' %}">OpenVPN</a> 会根据配置文件决定路由表；其它软件一般会把所有流量导向服务器，不区分校内和校外流量，你需要手动修改路由表
+	A: 由客户端软件决定。Windows、Linux、Mac OS 上的 <a href="{% url 'serverlist:vpn' %}">OpenVPN</a> 会根据配置文件设置路由表；其它软件一般会把所有流量导向服务器，不区分校内和校外流量，你需要手动修改路由表
 </p>
 <p>
 	Q: 安全性<br>

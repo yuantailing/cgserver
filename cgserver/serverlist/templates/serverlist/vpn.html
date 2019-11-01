@@ -3,6 +3,7 @@
 
 {% block content %}
 <h1 class="mb-4">OpenVPN</h1>
+<p>此 VPN 只能节省校园网流量费，与国际联网无关</p>
 <p><b>配置文件：</b><a href="{% static 'serverlist/cscg.ovpn' %}">点击下载</a></p>
 <p>
 	<b>下载软件：</b>
@@ -10,16 +11,17 @@
 </p>
 <p>
 	镜像下载：
-	<a href="https://open-access.oss-cn-beijing.aliyuncs.com/Downloads/openvpn-install-2.4.7-I607-Win10.exe">openvpn-install-2.4.7-I607-Win10.exe</a>
+	<a href="https://open-access.oss-cn-beijing.aliyuncs.com/Downloads/openvpn-install-2.4.8-I602-Win10.exe">openvpn-install-2.4.8-I602-Win10.exe</a>
 	（适用于 Windows 10）
 </p>
 <p>
 	镜像下载：
-	<a href="https://open-access.oss-cn-beijing.aliyuncs.com/Downloads/openvpn-install-2.4.7-I607-Win7.exe">openvpn-install-2.4.7-I607-Win7.exe</a>
+	<a href="https://open-access.oss-cn-beijing.aliyuncs.com/Downloads/openvpn-install-2.4.8-I602-Win7.exe">openvpn-install-2.4.8-I602-Win7.exe</a>
 	（适用于 Windows 7/8/8.1）
 </p>
 <p><b>帐号：</b>使用本网站的<a href="{% url 'serverlist:profile' %}">用户名和密码</a></p>
 <p>{% include "./tmpl_vpn_privileged_status.html" %}</p>
+{% include "./tmpl_vpn_net_readme.html" %}
 <hr>
 
 <h3>FAQ</h3>
@@ -34,7 +36,7 @@
 	Q: Linux 如何配置 OpenVPN<br>
 	A: 两种方案，推荐先用前一种测试一下可以连接，然后换成后一种，以服务模式运行，避免多开一个 terminal，其它用户也可重启该服务<br>
 	A1: 1) 安装 <code>$ sudo apt install openvpn</code>，2) 下载配置文件 <a href="{% static 'serverlist/cscg.ovpn' %}">cscg.ovpn</a>，3) 运行 <code>$ sudo openvpn cscg.ovpn</code><br>
-	A2: 1) 安装 <code>$ sudo apt install openvpn</code>，2) 下载配置文件到指定路径 <code>$ sudo curl <script>document.write(window.location.origin);</script>{% static 'serverlist/cscg.ovpn' %} -Lo/etc/openvpn/cscg.conf</code>，3) 运行 <code>$ sudo service openvpn restart</code>（或 <code>$ sudo systemctl restart openvpn</code>）
+	A2: 1) 安装 <code>$ sudo apt install openvpn</code>，2) 下载配置文件到指定路径 <code>$ sudo curl <script>document.write(window.location.origin);</script>{% static 'serverlist/cscg.ovpn' %} -Lo/etc/openvpn/cscg.conf</code>，3) 运行 <code>$ sudo service openvpn@cscg restart</code>（一些老版本是运行 <code>$ sudo service openvpn restart</code>）
 </p>
 <p>
 	Q: net.tsinghua.edu.cn 仍看到自己的帐号<br>
@@ -42,14 +44,14 @@
 </p>
 <p>
 	Q: 免输密码（Windows OpenVPN 2.4 以上可以保存密码，无需此操作）<br>
-	A: 配置文件中 <code>auth-user-pass</code> 这行改为 <code>auth-user-pass account.txt</code>，新建 account.txt（与 cscg.ovpn 同目录），第一行填用户名，第二行填密码。请把密码文件设为其它用户不可读 <code>$ sudo chmod 600 /etc/openvpn/account.txt</code>
+	A: 配置文件第一行 <code>auth-user-pass</code> 改为 <code>auth-user-pass account.txt</code>，新建 account.txt（与 cscg.ovpn 同目录），第一行填用户名，第二行填密码。请把密码文件设为其它用户不可读 <code>$ sudo chmod 600 /etc/openvpn/account.txt</code>
 </p>
 <p>
 	Q: 我在校外，想使用 VPN 访问校内资源（如 info 等）<br>
 	A: 配置文件中 <code>route 166.111.0.0 255.255.0.0 net_gateway</code> 中的 net_gateway 改为 vpn_gateway 即可。59.66 网段同理
 </p>
 <p>
-	Q: 我的网络环境比较复杂，使用了 TCP 代理，使用 UDP 协议连不上 OpenVPN<br>
+	Q: 我所在的网络环境 UDP 不稳定，或者使用了 TCP 代理<br>
 	A: 我们还开了 TCP 协议的 OpenVPN 服务，可以把配置文件中 <code>proto udp</code> 这行改成 <code>proto tcp</code> 再试
 </p>
 <p>
