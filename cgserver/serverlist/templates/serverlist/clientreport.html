@@ -45,11 +45,14 @@
 	<li>disk_io_counters: <code>sdiskio(read_count, write_count, read_bytes, write_bytes, read_time, write_time, read_merged_count, write_merged_count, busy_time)</code></li>
 	<li>disk_partitions: <code>[sdiskpart(device, mountpoint, fstype, opts)]</code></li>
 	<li>disk_usage: <code>[sdiskusage(total, used, free, percent)]</code></li>
+	<li>dist: <code>distname, version, id</code></li>
+	<li>loadavg: <code>1 min, 5 min, 15 min</code></li>
 	<li>cpu_freq: <code>sdiskusage(total, used, free, percent)</code></li>
 	<li>net_if_addrs: <code>{[snicaddr(family, address, netmask, broadcast, ptp)]}</code></li>
 	<li>net_if_stats: <code>{snicstats(isup, duplex, speed, mtu)}</code></li>
 	<li>net_io_counters: <code>snetio(bytes_sent, bytes_recv, packets_sent, packets_recv, errin, errout, dropin, dropout)</code></li>
 	<li>swap_memory: <code>sswap(total, used, free, percent, sin, sout)</code></li>
+	<li>uname: <code>system, node, release, version, machine, processor</code></li>
 	<li>users: <code>[suser(name, terminal, host, started, pid)]</code></li>
 	<li>virtual_memory: <code>svmem(total, available, percent, used, free, active, inactive, buffers, cached, shared, slab)</code></li>
 </ul>

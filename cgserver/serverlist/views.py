@@ -100,11 +100,18 @@ def index(request):
         client = client_report.client
         report = json.loads(client_report.report)
         status = 'ok'
-        if client_report.version != '0.1.1':
+        if client_report.version != '0.1.2':
             status = '监测脚本不匹配'
+            platform = ''
+        elif report['uname'][0] == 'Linux':
+            platform = '{:s} {:s}'.format(report['dist'][0].capitalize(), report['dist'][1])
+        elif report['uname'][0] == 'Windows':
+            platform = 'Windows {:s}'.format(report['uname'][2])
+        else:
+            platform = report['uname'][0]
         tr = []
         tr.append(client.display_name or client.client_id)
-        tr.append(report['platform'])
+        tr.append(platform)
         ips = [client_report.ip]
         if settings.ROUTE53_DOMAIN_NAME:
             ips.append(client.client_id.lower() + '.' + settings.ROUTE53_DOMAIN_NAME)
@@ -115,7 +122,7 @@ def index(request):
         if status == 'ok':
             tr.append([
                     '{:d} 线程 (使用 {:.0f}%)'.format(report['cpu_count'], report['cpu_percent']),
-                    '最高主频 {:.1f}GHz'.format(report['cpu_freq'][2] / 1000),
+                    '最高频率 {:.1f}GHz'.format(report['cpu_freq'][2] / 1000),
                 ])
             tr.append('N/A' if report['loadavg'] is None else '{:.1f}'.format(report['loadavg'][2]))
             tr.append('{:.1f}G ({:.0f}%)'.format(report['virtual_memory'][0] / 1024 ** 3, report['virtual_memory'][2]))

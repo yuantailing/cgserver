@@ -4,9 +4,11 @@ from __future__ import unicode_literals
 
 import json
 import os
+import platform
 import psutil
 import pynvml
-import sys
+import time
+import warnings
 
 from pprint import pprint
 
@@ -17,6 +19,10 @@ def disk_usage(path):
     except PermissionError:
         return psutil._common.sdiskusage(0, 0, 0, 0)
 
+def dist():
+    with warnings.catch_warnings():
+        warnings.simplefilter('ignore', DeprecationWarning)
+        return platform.dist()
 
 def get_utilization_rates(handle):
     try:
@@ -30,13 +36,11 @@ def get_utilization_rates(handle):
             memory=None,
         )
 
-
 def get_fan_speed(handle):
     try:
         return pynvml.nvmlDeviceGetFanSpeed(handle)
     except pynvml.NVMLError_NotSupported:
         return None
-
 
 def gputask():
     def get(handle):
@@ -71,12 +75,14 @@ def gputask():
             nvml_version=None,
         )
 
-
 def alltasks(ensure_json=True):
     assert psutil._PY3
     res = dict(
-        version='0.1.1',
-        platform=sys.platform,
+        version='0.1.2',
+        platform=platform.platform(),
+        uname=platform.uname(),
+        dist=dist(),
+        now=time.time(),
         boot_time=psutil.boot_time(),
         loadavg=hasattr(os, 'getloadavg') and os.getloadavg() or None,
         cpu_count=psutil.cpu_count(),
@@ -99,7 +105,6 @@ def alltasks(ensure_json=True):
     if ensure_json:
         res = json.loads(json.dumps(res))
     return res
-
 
 if __name__ == '__main__':
     pprint(alltasks(ensure_json=False))
