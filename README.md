@@ -1,9 +1,9 @@
 # cgserver
-cscg server list
+CSCG server list
 
 ## Usage
 
-### Server-side
+### Server side
 
 ```shell
 pip3 install -r requirements.txt
@@ -23,12 +23,12 @@ python3 manage.py runserver
 
 You may run `python3 manage.py createsuperuser` to add an administrator.
 
-### Client-side
+### Client side
 
 ```shell
 pip3 install -r requirements.txt
 cp settings.py.sample settings.py
-chown 600 settings.py
+chmod 600 settings.py
 ```
 
 Add *report.py* to crontab, using `crontab -e` is recommended, for example:
