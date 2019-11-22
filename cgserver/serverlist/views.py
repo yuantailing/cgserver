@@ -153,7 +153,10 @@ def index(request):
             tr.append('{:.0f} 天'.format((now - report['boot_time']) / 86400, 0))
             dt = now - client_report.created_at.timestamp()
             if dt >= 86400:
-                tr.append('+{:.0f} 天前'.format(dt / 86400))
+                tr.append([
+                    '{:.0f} 分钟前'.format(dt / 60),
+                    '({:.1f} 天前)'.format(dt / 86400),
+                ])
             else:
                 tr.append('{:.0f} 分钟前'.format(dt / 60))
         else:
