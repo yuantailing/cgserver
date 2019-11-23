@@ -2,13 +2,13 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import distro
 import json
 import os
 import platform
 import psutil
 import pynvml
 import time
-import warnings
 
 from pprint import pprint
 
@@ -18,11 +18,6 @@ def disk_usage(path):
         return psutil.disk_usage(path)
     except PermissionError:
         return psutil._common.sdiskusage(0, 0, 0, 0)
-
-def dist():
-    with warnings.catch_warnings():
-        warnings.simplefilter('ignore', DeprecationWarning)
-        return platform.dist()
 
 def get_utilization_rates(handle):
     try:
@@ -81,7 +76,7 @@ def alltasks(ensure_json=True):
         version='0.1.2',
         platform=platform.platform(),
         uname=platform.uname(),
-        dist=dist(),
+        dist=distro.linux_distribution(),
         now=time.time(),
         boot_time=psutil.boot_time(),
         loadavg=hasattr(os, 'getloadavg') and os.getloadavg() or None,
