@@ -42,7 +42,7 @@ class AccessLog(models.Model):
 
 
 class Employee(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
     can_access = models.BooleanField(default=False)
     staff_number = models.IntegerField(unique=True, blank=True, null=True,
         validators=[

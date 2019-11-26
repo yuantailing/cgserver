@@ -21,16 +21,21 @@ class ClientReportAdmin(admin.ModelAdmin):
 
 
 class EmployeeAdmin(admin.ModelAdmin):
+    def get_readonly_fields(self, request, obj=None):
+        if obj:
+            return ('user', ) + self.readonly_fields
+        return self.readonly_fields
+
     def user_email(inst):
         return inst.user.email
 
     def password_is_set(inst):
         return inst.shadow_password not in (None, '') and inst.nt_password_hash not in (None, '')
 
-    list_display = ('id', 'user', user_email, 'can_access', 'staff_number', 'vpn_privileged', 'vpn_privileged_until', 'ftp_insecure', )
+    list_display = ('user', user_email, 'can_access', 'staff_number', 'vpn_privileged', 'vpn_privileged_until', 'ftp_insecure', )
     list_filter = ('can_access', 'vpn_privileged', 'ftp_insecure', )
     exclude = ('nt_password_hash', 'shadow_password', )
-    readonly_fields = ('user', user_email, 'staff_number', password_is_set, 'password_updated_at', )
+    readonly_fields = (user_email, 'staff_number', password_is_set, 'password_updated_at', )
 
 
 class FtpPermAdmin(admin.ModelAdmin):
