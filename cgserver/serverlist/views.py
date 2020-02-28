@@ -4,8 +4,6 @@ import crypt
 import functools
 import ipaddress
 import json
-import math
-import os
 import pprint
 import requests
 import threading
@@ -17,13 +15,12 @@ from .models import AccessLog, Client, ClientReport, Employee, FtpPerm, GithubUs
 from datetime import datetime, timedelta
 from django.conf import settings
 from django.contrib import auth, messages
-from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
 from django.db import models, transaction
 from django.db.models import Max
-from django.http import Http404, HttpResponseBadRequest, HttpResponse, JsonResponse
+from django.http import Http404, HttpResponseBadRequest, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
@@ -44,12 +41,14 @@ def get_ip(request):
 def is_tsinghua_ip(ip):
     addr = ipaddress.ip_address(ip)
     return any(addr in ipaddress.ip_network(net) for net in (
-        '166.111.0.0/16',
         '59.66.0.0/16',
         '101.5.0.0/16',
         '101.6.0.0/16',
-        '183.172.0.0/15',
         '118.229.0.0/19',
+        '166.111.0.0/16',
+        '183.172.0.0/15',
+        #'219.223.168.0/21', # Shenzhen
+        #'219.223.176.0/20', # Shenzhen
     ))
 
 def get_mac(report, ip):
@@ -227,7 +226,7 @@ def recvreport(request):
         report = json.loads(report)
         version = report.get('version')
         assert isinstance(version, type(u''))
-    except:
+    except Exception:
         return HttpResponseBadRequest()
     ip = get_ip(request)
     client = Client.objects.filter(client_id=client_id, client_secret=client_secret).first()
@@ -263,7 +262,7 @@ def recvreport(request):
                     )
                     client_report.dns_success = True
                     client_report.save()
-                except:
+                except Exception:
                     client_report.dns_success = False
                     client_report.save()
             threading.Thread(target=dns_upsert, daemon=True).start()
@@ -469,9 +468,9 @@ def githubcallback(request):
         if github_user is None:
             try:
                 user = User.objects.create(username=guser['login'], email=guser['email'] or '')
-            except:
+            except Exception:
                 user = User.objects.create(username=uuid.uuid4(), email=guser['email'] or '')
-            github_user = GithubUser.objects.create(user=user, github_id=guser['id'], github_login=guser['login'], github_email=guser['email'] or '')
+            GithubUser.objects.create(user=user, github_id=guser['id'], github_login=guser['login'], github_email=guser['email'] or '')
         else:
             user = github_user.user
             github_user.github_login = guser['login']

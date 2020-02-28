@@ -1,7 +1,6 @@
 from django.contrib import admin
 
 from .models import AccessLog, Client, ClientReport, Employee, FtpPerm, GithubUser, UnknownReport
-from django.contrib.auth.models import User
 
 # Register your models here.
 

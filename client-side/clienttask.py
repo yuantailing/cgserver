@@ -59,13 +59,14 @@ def gputask():
         )
     try:
         pynvml.nvmlInit()
-        return dict(
+        res = dict(
             nvml_version=pynvml.nvmlSystemGetDriverVersion().decode(),
             nvmlDeviceGetCount=pynvml.nvmlDeviceGetCount(),
             nvmlDevices=[get(pynvml.nvmlDeviceGetHandleByIndex(i)) for i in range(pynvml.nvmlDeviceGetCount())],
         )
         pynvml.nvmlShutdown()
-    except:
+        return res
+    except Exception:
         return dict(
             nvml_version=None,
         )
