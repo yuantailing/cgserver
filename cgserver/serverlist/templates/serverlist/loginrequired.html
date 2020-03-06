@@ -4,5 +4,5 @@
 
 {% block content %}
 <h1 class="mb-4">需要登录</h1>
-<p>请 <a href="{% url 'serverlist:loginpassword' %}">验证密码</a> 或 <a href="{% url 'serverlist:logingithuboauth' %}">通过 GitHub 授权</a> <img src="{% static 'serverlist/GitHub-Mark-32px.png' %}" style="height: 1em;">。</p>
+<p>请 <a href="{% url 'serverlist:loginpassword' %}">验证密码</a> 或 <a href="{% url 'serverlist:logingithuboauth' %}">通过 GitHub 授权</a> <img src="{% static 'serverlist/GitHub-Mark-32px.png' %}" style="height: 1em;" alt="GitHub mark">。</p>
 {% endblock %}

@@ -21,7 +21,7 @@
 			<a class="nav-item nav-link dropdown-toggle mr-md-2" href="#" id="bd-versions" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Anonymous user </a>
 			<div class="dropdown-menu dropdown-menu-right" aria-labelledby="bd-versions">
 				<a class="dropdown-item" href="{% url 'serverlist:loginpassword' %}">Login with password</a>
-				<a class="dropdown-item" href="{% url 'serverlist:logingithuboauth' %}">Login with GitHub OAuth <img src="{% static 'serverlist/GitHub-Mark-32px.png' %}" style="height: 1em;"></a></a>
+				<a class="dropdown-item" href="{% url 'serverlist:logingithuboauth' %}">Login with GitHub OAuth <img src="{% static 'serverlist/GitHub-Mark-32px.png' %}" style="height: 1em;" alt="GitHub mark"></a>
 			</div>
 		</li>
 		{% else %}
