@@ -100,7 +100,7 @@ def index(request):
         report = json.loads(client_report.report)
         status = 'ok'
         if client_report.version != '0.1.2':
-            status = '监测脚本不匹配'
+            status = '版本不匹配'
             platform = ''
         elif report['uname'][0] == 'Linux':
             platform = '{:s} {:s}'.format(report['dist'][0].capitalize(), report['dist'][1])
@@ -161,8 +161,7 @@ def index(request):
         else:
             tr += [''] * 9
             tr.append(status)
-        tr.append(client.manager)
-        tr.append(client.info)
+        tr.append([client.info, client.manager])
         table.append({'client': client, 'tr': tr})
     for client in clients_no_report:
         tr = []
@@ -171,8 +170,7 @@ def index(request):
         tr.append('N/A')
         tr += [''] * 9
         tr += ['未配置']
-        tr.append(client.manager)
-        tr.append(client.info)
+        tr.append([client.info, client.manager])
         table.append({'client': client, 'tr': tr})
     AccessLog.objects.create(user=request.user, ip=get_ip(request), target='serverlist:index')
     return render(request, 'serverlist/index.html', {'table': table})
