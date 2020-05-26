@@ -40,16 +40,17 @@ def get_ip(request):
 
 def is_tsinghua_ip(ip):
     addr = ipaddress.ip_address(ip)
-    return any(addr in ipaddress.ip_network(net) for net in (
-        '59.66.0.0/16',
-        '101.5.0.0/16',
-        '101.6.0.0/16',
-        '118.229.0.0/19',
-        '166.111.0.0/16',
-        '183.172.0.0/15',
-        #'219.223.168.0/21', # Shenzhen
-        #'219.223.176.0/20', # Shenzhen
-    ))
+    return addr.is_private or \
+        any(addr in ipaddress.ip_network(net) for net in (
+            '59.66.0.0/16',
+            '101.5.0.0/16',
+            '101.6.0.0/16',
+            '118.229.0.0/19',
+            '166.111.0.0/16',
+            '183.172.0.0/15',
+            #'219.223.168.0/21', # Shenzhen
+            #'219.223.176.0/20', # Shenzhen
+        ))
 
 def get_mac(report, ip):
     for if_addr in report['net_if_addrs'].values():
@@ -526,9 +527,10 @@ def vpnauth(request):
             return {'error': 1, 'msg': 'no such client'}, None, None
         if password != client.client_secret:
             return {'error': 1, 'msg': 'client secret error'}, None, None
-        report = client.clientreport_set.order_by('-id').first()
-        if not report or report.ip != ip:
-            return {'error': 2, 'msg': 'client ip error'}, client, 'error'
+        if not ipaddress.ip_address(ip).is_private:
+            report = client.clientreport_set.order_by('-id').first()
+            if not report or report.ip != ip:
+                return {'error': 2, 'msg': 'client ip error'}, client, 'error'
         return {'error': 0, 'msg': 'ok'}, client, 'success'
     def try_user():
         user = User.objects.filter(username=username).first()
