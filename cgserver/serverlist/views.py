@@ -204,7 +204,7 @@ def clientchart(request, pk):
                 'util': dev['nvmlDeviceGetUtilizationRates']['gpu'],
                 'memory': dev['nvmlDeviceGetMemoryInfo']['used'] / dev['nvmlDeviceGetMemoryInfo']['total'] * 100,
                 'temperature': dev.get('nvmlDeviceGetTemperature', None),
-            } for dev in report.get('nvmlDevices', [])],
+            } if dev else None for dev in report.get('nvmlDevices', [])],
         })
     AccessLog.objects.create(user=request.user, ip=get_ip(request), target='serverlist:clientchart', param=pk)
     return render(request, 'serverlist/clientchart.html', {'client': client, 'data': base64.b64encode(json.dumps(data, ensure_ascii=True).encode()).decode()})
