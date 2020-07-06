@@ -100,7 +100,7 @@ def index(request):
         client = client_report.client
         report = json.loads(client_report.report)
         status = 'ok'
-        if client_report.version != '0.1.2':
+        if client_report.version not in ('0.1.2', '0.1.3'):
             status = '版本不匹配'
             platform = ''
         elif report['uname'][0] == 'Linux':
@@ -121,7 +121,9 @@ def index(request):
         tr.append(ips)
         if status == 'ok':
             tr.append([
-                    '{:d} 线程 (使用 {:.0f}%)'.format(report['cpu_count'], report['cpu_percent']),
+                    ('{:d} 核 '.format(report['cpu_count_physical']) if 'cpu_count_physical' in report else '') + \
+                    '{:d} 线程'.format(report.get('cpu_count_logical', report.get('cpu_count'))),
+                    '使用率 {:.0f}%'.format(report['cpu_percent']),
                     '最高频率 {:.1f}GHz'.format(report['cpu_freq'][2] / 1000),
                 ])
             tr.append('N/A' if report['loadavg'] is None else '{:.1f}'.format(report['loadavg'][2]))
@@ -131,16 +133,16 @@ def index(request):
             disks = [usage for i, (partition, usage) in enumerate(disks) if partition[0] not in set(p[0] for p, _ in disks[:i])]
             tr.append(['{:.0f}G ({:.0f}%)'.format(disk[0] / 1024**3, disk[3]) for disk in disks if disk[0] / 1024**3 > 9])
             if report['nvml_version']:
-                tr.append([dev['nvmlDeviceGetName'] for dev in report['nvmlDevices']])
+                tr.append([dev['nvmlDeviceGetName'] if dev else 'GPU{:d} is lost'.format(i) for i, dev in enumerate(report['nvmlDevices'])])
                 tr.append(['{:.1f}G ({:.0f}%)'.format(
                         dev['nvmlDeviceGetMemoryInfo']['total'] / 1024**3,
                         dev['nvmlDeviceGetMemoryInfo']['used'] / dev['nvmlDeviceGetMemoryInfo']['total'] * 100,
-                    ) for dev in report['nvmlDevices']])
+                    ) if dev else '-' for dev in report['nvmlDevices']])
                 tr.append(['{:s}% {:.0f}W {:d}℃'.format(
                         '-' if dev['nvmlDeviceGetUtilizationRates']['gpu'] is None else '{:d}'.format(dev['nvmlDeviceGetUtilizationRates']['gpu']),
                         dev['nvmlDeviceGetPowerUsage'] / 1000,
                         dev['nvmlDeviceGetTemperature'],
-                    ) for dev in report['nvmlDevices']])
+                    ) if dev else '-' for dev in report['nvmlDevices']])
             else:
                 tr.append('NVML failed')
                 tr.append('N/A')

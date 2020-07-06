@@ -38,7 +38,11 @@ def get_fan_speed(handle):
         return None
 
 def gputask():
-    def get(handle):
+    def get(index):
+        try:
+            handle = pynvml.nvmlDeviceGetHandleByIndex(index)
+        except pynvml.NVMLError_GpuIsLost:
+            return None
         memory_info=pynvml.nvmlDeviceGetMemoryInfo(handle)
         return dict(
             nvmlDeviceGetName=pynvml.nvmlDeviceGetName(handle).decode('utf-8'),
@@ -62,7 +66,7 @@ def gputask():
         res = dict(
             nvml_version=pynvml.nvmlSystemGetDriverVersion().decode(),
             nvmlDeviceGetCount=pynvml.nvmlDeviceGetCount(),
-            nvmlDevices=[get(pynvml.nvmlDeviceGetHandleByIndex(i)) for i in range(pynvml.nvmlDeviceGetCount())],
+            nvmlDevices=[get(i) for i in range(pynvml.nvmlDeviceGetCount())],
         )
         pynvml.nvmlShutdown()
         return res
@@ -74,14 +78,15 @@ def gputask():
 def alltasks(ensure_json=True):
     assert psutil._PY3
     res = dict(
-        version='0.1.2',
+        version='0.1.3',
         platform=platform.platform(),
         uname=platform.uname(),
         dist=distro.linux_distribution(),
         now=time.time(),
         boot_time=psutil.boot_time(),
         loadavg=hasattr(os, 'getloadavg') and os.getloadavg() or None,
-        cpu_count=psutil.cpu_count(),
+        cpu_count_logical=psutil.cpu_count(logical=True),
+        cpu_count_physical=psutil.cpu_count(logical=False),
         cpu_freq=psutil.cpu_freq(),
         cpu_percent=psutil.cpu_percent(),
         cpu_stats=psutil.cpu_stats(),
