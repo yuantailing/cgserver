@@ -43,7 +43,7 @@ class AccessLog(models.Model):
 
 class Employee(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
-    can_access = models.BooleanField(default=False)
+    can_access = models.BooleanField(db_index=True, default=False)
     staff_number = models.IntegerField(unique=True, blank=True, null=True,
         validators=[
             MinValueValidator(1),
@@ -52,7 +52,7 @@ class Employee(models.Model):
     )
     shadow_password = models.CharField(max_length=255, blank=True)
     nt_password_hash = models.CharField(max_length=64, blank=True)
-    password_updated_at = models.DateTimeField(default=datetime.datetime(2018, 1, 1, tzinfo=datetime.timezone.utc))
+    password_updated_at = models.DateTimeField(db_index=True, default=datetime.datetime(2018, 1, 1, tzinfo=datetime.timezone.utc))
     vpn_privileged = models.BooleanField(db_index=True, default=False)
     vpn_privileged_until = models.DateTimeField(default=datetime.datetime(2018, 1, 1, tzinfo=datetime.timezone.utc))
     ftp_insecure = models.BooleanField(db_index=True, default=False)

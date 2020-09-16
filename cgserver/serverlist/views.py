@@ -609,7 +609,7 @@ def cgnas_api(request):
         return HttpResponseBadRequest('client secret error')
 
     def latest_password_update():
-        recent_one = Employee.objects.filter(staff_number__isnull=False).order_by('-password_updated_at').first()
+        recent_one = Employee.objects.filter(staff_number__isnull=False, can_access=True).order_by('-password_updated_at').first()
         if recent_one is None:
             return -1
         else:
@@ -622,7 +622,7 @@ def cgnas_api(request):
             break
         time.sleep(1)
 
-    staffs = Employee.objects.filter(staff_number__isnull=False).order_by('staff_number')
+    staffs = Employee.objects.filter(staff_number__isnull=False, can_access=True).order_by('staff_number').select_related('user')
     data = {
         'users': [
             {
