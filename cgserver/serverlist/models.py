@@ -12,6 +12,13 @@ class Client(models.Model):
     client_id = models.CharField(max_length=64, db_index=True, unique=True, default=None)
     client_secret = models.CharField(max_length=64, default=None)
     display_name = models.CharField(max_length=64, blank=True, default='')
+    priority = models.IntegerField(  # 0~49: normal, 50~98: fold, 99: hidden
+        db_index=True,
+        validators=[
+            MinValueValidator(0),
+            MaxValueValidator(99),
+        ]
+    )
     manager = models.CharField(max_length=64, blank=True, default='')
     info = models.TextField(blank=True, default='')
     created_at = models.DateTimeField(auto_now_add=True)

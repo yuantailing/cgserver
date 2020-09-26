@@ -92,8 +92,8 @@ def index(request):
         return redirect(reverse('serverlist:profile'))
 
     client_reports = ClientReport.objects.values('client_id').annotate(id=models.Max('id'))
-    clients_no_report = Client.objects.exclude(id__in=[c['client_id'] for c in client_reports]).order_by('client_id')
-    client_reports = ClientReport.objects.filter(id__in=[c['id'] for c in client_reports]).select_related('client').order_by('client__client_id')
+    clients_no_report = Client.objects.exclude(id__in=[c['client_id'] for c in client_reports]).filter(priority__lt=99).order_by('priority', 'client_id')
+    client_reports = ClientReport.objects.filter(id__in=[c['id'] for c in client_reports], client__priority__lt=99).select_related('client').order_by('client__priority', 'client__client_id')
     now = time.time()
     table = []
     for client_report in client_reports:

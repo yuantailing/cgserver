@@ -11,7 +11,8 @@ class AccessLogAdmin(admin.ModelAdmin):
 
 
 class ClientAdmin(admin.ModelAdmin):
-    list_display = ('id', 'client_id', 'display_name', 'created_at', )
+    list_display = ('id', 'client_id', 'display_name', 'priority', 'created_at', )
+    list_filter = ('priority', )
 
 
 class ClientReportAdmin(admin.ModelAdmin):
